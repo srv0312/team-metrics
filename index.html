@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Metrics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@400;500;600&family=Poppins:wght@400;500;600&family=DM+Sans:wght@400;500;600&family=Nunito:wght@400;500;600&family=Outfit:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&family=Sora:wght@400;500;600&family=Manrope:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F7F5;
+    --surface: #FFFFFF;
+    --surface-2: #F2F2F0;
+    --border: rgba(0,0,0,.08);
+    --border-strong: rgba(0,0,0,.14);
+    --text: #1A1A18;
+    --text-2: #5C5C58;
+    --text-3: #9A9A94;
+    --accent: #4F6EF7;
+    --accent-bg: #EEF1FE;
+    --accent-text: #2D4BD4;
+    --green: #18A86B;
+    --green-bg: #E8F8F1;
+    --green-text: #0D7A4E;
+    --amber: #D48A0C;
+    --amber-bg: #FEF3DC;
+    --amber-text: #9A6008;
+    --red: #E0433A;
+    --red-bg: #FEECEB;
+    --red-text: #A32D26;
+    --purple: #7C5CFC;
+    --purple-bg: #F0ECFF;
+    --purple-text: #5438C2;
+    --coral: #E85D3A;
+    --coral-bg: #FEECE7;
+    --coral-text: #B0371D;
+    --teal: #0EA87A;
+    --teal-bg: #E4F7F1;
+    --teal-text: #0A7757;
+    --thead-bg: var(--surface-2);
+    --thead-text: var(--text-3);
+    --kpi-icon-bg-1: var(--accent-bg);
+    --kpi-icon-c-1: var(--accent);
+    --kpi-icon-bg-2: var(--purple-bg);
+    --kpi-icon-c-2: var(--purple);
+    --kpi-icon-bg-3: var(--amber-bg);
+    --kpi-icon-c-3: var(--amber);
+    --kpi-icon-bg-4: var(--teal-bg);
+    --kpi-icon-c-4: var(--teal);
+    --font: 'Inter', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --r: 10px;
+    --r-sm: 6px;
+  }
+
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 220px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+  .logo-mark { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+  .logo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  .sidebar-nav { padding: 12px 10px; flex: 1; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-3); letter-spacing: .07em; text-transform: uppercase; padding: 0 10px; margin: 12px 0 6px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--r-sm); color: var(--text-2); font-size: 13px; cursor: pointer; transition: background .12s, color .12s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item svg { flex-shrink: 0; opacity: .7; }
+  .nav-item:hover { background: var(--surface-2); color: var(--text); }
+  .nav-item:hover svg { opacity: 1; }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent-text); font-weight: 500; }
+  .nav-item.active svg { opacity: 1; }
+
+  .sidebar-footer { padding: 14px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-3); }
+  #period-display { font-size: 12px; font-weight: 500; color: var(--text-2); margin-top: 2px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+  /* Period mode toggle */
+  .period-toggle { display: flex; background: var(--surface-2); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+  .ptbtn { padding: 4px 10px; border-radius: 4px; border: none; background: none; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all .12s; }
+  .ptbtn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+  .month-ctrl { display: flex; align-items: center; gap: 6px; }
+  .mbtn { width: 28px; height: 28px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s; }
+  .mbtn:hover { background: var(--surface-2); }
+  .mlabel { font-size: 13px; font-weight: 500; color: var(--text); min-width: 160px; text-align: center; }
+
+  .content { flex: 1; padding: 24px 28px; overflow-y: auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; }
+  .kpi-icon-wrap { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .kpi-val { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
+  .kpi-lbl { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .kpi-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+  .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .sec-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .sec-sub { font-size: 12px; color: var(--text-3); }
+
+  /* Table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead th { font-size: 11px; font-weight: 600; color: var(--thead-text); text-align: left; padding: 10px 16px; background: var(--thead-bg); border-bottom: 1px solid var(--border); letter-spacing: .04em; text-transform: uppercase; }
+  thead th:not(:first-child):not(:nth-child(2)) { text-align: center; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
+  td { font-size: 13px; color: var(--text); padding: 12px 16px; vertical-align: middle; }
+  td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(--text-2); }
+  td.num { font-family: var(--mono); font-size: 12px; }
+  td.num-neg { font-family: var(--mono); font-size: 12px; color: var(--red-text) !important; }
+
+  /* Avatar */
+  .av-wrap { display: flex; align-items: center; gap: 10px; }
+  .av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .av-name { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* Status chips */
+  .chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+  .chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .chip-g { background: var(--green-bg); color: var(--green-text); }
+  .chip-g::before { background: var(--green); }
+  .chip-a { background: var(--amber-bg); color: var(--amber-text); }
+  .chip-a::before { background: var(--amber); }
+  .chip-r { background: var(--red-bg); color: var(--red-text); }
+  .chip-r::before { background: var(--red); }
+  .chip-n { background: var(--surface-2); color: var(--text-3); }
+  .chip-n::before { background: var(--text-3); }
+
+  /* Score bar */
+  .score-bar { display: flex; align-items: center; gap: 6px; justify-content: center; }
+  .bar-bg { width: 52px; height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .bar-fg { height: 100%; border-radius: 2px; }
+  .bar-val { font-family: var(--mono); font-size: 12px; color: var(--text-2); min-width: 28px; text-align: left; }
+  .rank-num { font-size: 13px; text-align: center; }
+
+  /* Individual cards */
+  .ind-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .ind-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .ind-card-top { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .ind-av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .ind-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .ind-body { padding: 0 18px; }
+  .ind-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .ind-row:last-child { border-bottom: none; }
+  .ind-key { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 7px; }
+  .ind-key svg { flex-shrink: 0; }
+  .ind-val { font-size: 13px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+  .ind-val.neg { color: var(--red-text); }
+  .ind-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .ind-bar-bg { width: 64px; height: 3px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .ind-bar-fg { height: 100%; border-radius: 2px; }
+
+  /* View toggle for individual metrics */
+  .view-toggle { display: flex; background: var(--surface-2); border-radius: var(--r-sm); padding: 2px; gap: 2px; }
+  .vtbtn { padding: 5px 10px; border-radius: 4px; border: none; background: none; font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--text-2); cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 5px; }
+  .vtbtn svg { flex-shrink: 0; }
+  .vtbtn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+  /* Compact list view */
+  .ind-compact { display: flex; flex-direction: column; gap: 2px; }
+  .ind-compact-row { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); transition: background .1s; }
+  .ind-compact-row:hover { background: color-mix(in srgb, var(--accent) 4%, var(--surface)); }
+  .ind-compact-name { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+  .ind-compact-metrics { flex: 1; display: flex; gap: 0; }
+  .ind-compact-cell { flex: 1; text-align: center; }
+  .ind-compact-cell .lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .ind-compact-cell .val { font-size: 13px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+  .ind-compact-cell .val.neg { color: var(--red-text); }
+
+  /* Table view for individual metrics */
+  .ind-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+
+  /* KPI-style cards view */
+  .ind-kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+  /* Members manager */
+  .members-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .member-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); }
+  .member-row-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+  .member-row-role { font-size: 11px; color: var(--text-3); }
+  .member-del { background: none; border: none; cursor: pointer; color: var(--text-3); padding: 4px 6px; border-radius: 4px; transition: all .12s; font-size: 13px; }
+  .member-del:hover { color: var(--red); background: var(--red-bg); }
+
+  /* Avatar upload */
+  .av-upload { position: relative; cursor: pointer; flex-shrink: 0; }
+  .av-upload:hover .av-upload-overlay { opacity: 1; }
+  .av-upload-overlay { position: absolute; inset: 0; border-radius: 50%; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .15s; }
+  .av-upload-overlay svg { color: #fff; }
+  .av-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+  .av-file-input { display: none; }
+
+  /* Icon picker */
+  .icon-picker-wrap { position: relative; display: inline-block; }
+  .icon-picker-dropdown { position: absolute; top: 110%; left: 0; z-index: 200; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r); padding: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.12); min-width: 260px; display: none; }
+  .icon-picker-dropdown.open { display: block; }
+  .icon-picker-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 4px; max-height: 180px; overflow-y: auto; margin-bottom: 8px; }
+  .icon-picker-emoji { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 18px; border-radius: 6px; cursor: pointer; transition: background .1s; border: none; background: none; }
+  .icon-picker-emoji:hover { background: var(--surface-2); }
+  .icon-picker-sep { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin: 6px 0 4px; }
+  .icon-upload-btn { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-sm); border: 1px dashed var(--border-strong); background: none; color: var(--text-2); font-family: var(--font); font-size: 12px; cursor: pointer; width: 100%; justify-content: center; transition: all .12s; }
+  .icon-upload-btn:hover { border-color: var(--accent); color: var(--accent-text); background: var(--accent-bg); }
+  .icon-remove-btn { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-sm); border: none; background: var(--red-bg); color: var(--red-text); font-family: var(--font); font-size: 12px; cursor: pointer; width: 100%; justify-content: center; margin-top: 4px; transition: opacity .12s; }
+  .icon-remove-btn:hover { opacity: .8; }
+  .member-av-btn { background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+  .member-av-btn:hover .av-upload-overlay { opacity: 1; }
+
+  /* Revenue KPI new cards */
+  .kpi-grid-6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 900px) { .kpi-grid-6 { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Revenue breakdown cards */
+  .rev-breakdown { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 24px; }
+  .rev-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .rev-card-head { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .rev-card-title { font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .rev-card-total { font-size: 12px; font-family: var(--mono); font-weight: 600; color: var(--accent-text); }
+  .rev-bar-list { padding: 10px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .rev-bar-row { display: flex; align-items: center; gap: 8px; }
+  .rev-bar-label { display: flex; align-items: center; gap: 6px; min-width: 120px; font-size: 12px; color: var(--text-2); }
+  .rev-bar-track { flex: 1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+  .rev-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+  .rev-bar-val { font-size: 12px; font-family: var(--mono); color: var(--text); min-width: 64px; text-align: right; font-weight: 500; }
+  .rev-bar-val.neg { color: var(--red-text); }
+
+  /* Edit table */
+  .editable { display: block; width: 100%; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text); border: 1px solid transparent; border-radius: 4px; padding: 4px 6px; background: transparent; cursor: text; transition: border-color .12s, background .12s; outline: none; }
+  .editable:hover { border-color: var(--border-strong); background: var(--surface-2); }
+  .editable:focus { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-text); }
+
+  /* Add row */
+  .add-row { display: flex; gap: 8px; align-items: center; padding: 14px 0 0; }
+  .add-row input, .add-row select { font-family: var(--font); font-size: 13px; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); height: 34px; outline: none; }
+  .add-row input { flex: 1; }
+  .add-row input:focus, .add-row select:focus { border-color: var(--accent); }
+  .add-row select { cursor: pointer; }
+  .add-btn { padding: 0 16px; height: 34px; border-radius: var(--r-sm); border: none; background: var(--accent); color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity .12s; white-space: nowrap; }
+  .add-btn:hover { opacity: .88; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; font-size: 13px; font-weight: 500; padding: 10px 18px; border-radius: var(--r); opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Reuniones */
+  .meeting-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .meeting-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .meeting-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+  .meeting-head-left { display: flex; align-items: center; gap: 10px; }
+  .meeting-date { font-size: 13px; font-weight: 600; color: var(--text); }
+  .meeting-type { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--accent-bg); color: var(--accent-text); }
+  .meeting-del { background: none; border: none; cursor: pointer; color: var(--text-3); padding: 4px; border-radius: 4px; transition: color .12s, background .12s; display: flex; align-items: center; }
+  .meeting-del:hover { color: var(--red); background: var(--red-bg); }
+  .meeting-body { padding: 14px 18px; }
+  .meeting-attendees { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .attendee-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+  .attendee-tag .rm-att { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 12px; line-height: 1; padding: 0; margin-left: 2px; }
+  .attendee-tag .rm-att:hover { color: var(--red); }
+  .meeting-notes { width: 100%; font-family: var(--font); font-size: 12px; color: var(--text); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px 10px; background: var(--surface-2); resize: vertical; min-height: 60px; outline: none; }
+  .meeting-notes:focus { border-color: var(--accent); background: var(--surface); }
+  .meeting-att-add { display: flex; gap: 6px; margin-bottom: 10px; }
+  .att-add-btn { padding: 0 10px; height: 28px; border-radius: var(--r-sm); border: none; background: var(--accent-bg); color: var(--accent-text); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .att-add-btn:hover { background: var(--accent); color: #fff; }
+  .add-meeting-btn { display: flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: var(--r-sm); border: 1px dashed var(--border-strong); background: var(--surface); color: var(--text-2); font-family: var(--font); font-size: 13px; cursor: pointer; transition: all .12s; width: 100%; justify-content: center; }
+  .add-meeting-btn:hover { border-color: var(--accent); color: var(--accent-text); background: var(--accent-bg); }
+  .meeting-form { background: var(--surface); border: 1px solid var(--accent); border-radius: var(--r); padding: 16px 18px; margin-bottom: 12px; display: none; }
+  .meeting-form.open { display: block; }
+  .meeting-form-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .meeting-form-row input, .meeting-form-row select { font-family: var(--font); font-size: 13px; padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); outline: none; }
+  .meeting-form-row input:focus, .meeting-form-row select:focus { border-color: var(--accent); }
+  .mf-date { flex: 1; min-width: 140px; }
+  .mf-type { min-width: 140px; cursor: pointer; }
+  .mf-notes { width: 100%; resize: vertical; min-height: 60px; border-radius: var(--r-sm); padding: 8px 10px; }
+  .mf-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-primary { padding: 7px 16px; border-radius: var(--r-sm); border: none; background: var(--accent); color: #fff; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .btn-primary:hover { opacity: .88; }
+  .btn-ghost { padding: 7px 16px; border-radius: var(--r-sm); border: 1px solid var(--border-strong); background: none; color: var(--text-2); font-family: var(--font); font-size: 13px; cursor: pointer; }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-3); font-size: 13px; }
+  .empty-state svg { margin-bottom: 10px; opacity: .4; }
+
+  /* Configuración */
+  .cfg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .cfg-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+  .cfg-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .cfg-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cfg-row:last-child { margin-bottom: 0; }
+  .cfg-label { font-size: 12px; color: var(--text-2); }
+  .cfg-color-wrap { display: flex; align-items: center; gap: 8px; }
+  input[type="color"] { width: 36px; height: 28px; border: 1px solid var(--border-strong); border-radius: 4px; cursor: pointer; padding: 1px; background: var(--surface); }
+  .cfg-hex { font-family: var(--mono); font-size: 11px; color: var(--text-2); width: 68px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 4px; outline: none; }
+  .cfg-hex:focus { border-color: var(--accent); }
+  .cfg-font-select { font-family: var(--font); font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); cursor: pointer; outline: none; }
+  .cfg-logo-input { font-family: var(--font); font-size: 12px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); outline: none; width: 150px; }
+  .cfg-range { display: flex; align-items: center; gap: 8px; }
+  .cfg-range input[type="range"] { width: 80px; }
+  .cfg-range span { font-size: 12px; color: var(--text-2); font-family: var(--mono); min-width: 24px; }
+
+  /* Sidebar toggle */
+  .sidebar-toggle-btn { width: 30px; height: 30px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s, color .12s; flex-shrink: 0; }
+  .sidebar-toggle-btn:hover { background: var(--surface-2); color: var(--text); }
+  .sidebar { transition: width .22s cubic-bezier(.4,0,.2,1), opacity .18s; overflow: hidden; }
+  .sidebar.collapsed { width: 0 !important; border-right: none; opacity: 0; }
+
+  /* Activity pulse on KPI cards */
+  .kpi-card { transition: box-shadow .15s, transform .15s; cursor: default; }
+  .kpi-card:hover { box-shadow: 0 4px 16px rgba(79,110,247,.10); transform: translateY(-1px); }
+
+  /* Emoji category tabs */
+  .emoji-cats { display: flex; gap: 3px; margin-bottom: 8px; flex-wrap: wrap; }
+  .emoji-cat-btn { font-size: 12px; padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border); background: none; cursor: pointer; color: var(--text-2); transition: all .12s; font-family: var(--font); }
+  .emoji-cat-btn.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+
+  /* Search in emoji picker */
+  .emoji-search { width: 100%; font-family: var(--font); font-size: 12px; padding: 5px 9px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); outline: none; margin-bottom: 8px; }
+  .emoji-search:focus { border-color: var(--accent); background: var(--surface); }
+
+  /* Progress ring for individual cards */
+  .progress-ring-wrap { display: flex; flex-direction: column; align-items: center; padding: 12px 0 4px; }
+
+  /* Member add area */
+  .add-member-area { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin-top: 16px; }
+  .add-member-title { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .add-member-fields { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .add-member-fields input { font-family: var(--font); font-size: 13px; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); height: 38px; outline: none; flex: 1; min-width: 160px; }
+  .add-member-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .add-btn-new { padding: 0 20px; height: 38px; border-radius: var(--r-sm); border: none; background: var(--accent); color: #fff; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: opacity .12s, transform .1s; white-space: nowrap; letter-spacing: .01em; }
+  .add-btn-new:hover { opacity: .9; transform: translateY(-1px); }
+  .add-btn-new:active { transform: translateY(0); }
+
+  /* Tooltip */
+  [data-tip] { position: relative; }
+  [data-tip]::after { content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; background: var(--text); color: #fff; padding: 4px 8px; border-radius: 5px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 999; }
+  [data-tip]:hover::after { opacity: 1; }
+
+  /* Mini sparkline bars on team table rows */
+  .sparkbar { display: inline-flex; align-items: flex-end; gap: 1px; height: 14px; vertical-align: middle; }
+  .sparkbar span { width: 3px; border-radius: 1px; background: var(--accent); opacity: .5; }
+
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .ind-grid { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .cfg-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: 16px; }
+    .topbar { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div>
+          <div class="logo-name" id="logo-name-display">Team Metrics</div>
+          <div class="logo-sub">Panel de rendimiento</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Vistas</div>
+      <button class="nav-item active" onclick="showSection('general', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+        General del team
+      </button>
+      <button class="nav-item" onclick="showSection('individual', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Métricas individuales
+      </button>
+      <button class="nav-item" onclick="showSection('reuniones', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Reuniones
+      </button>
+      <div class="nav-label" style="margin-top:16px;">Datos</div>
+      <button class="nav-item" onclick="showSection('ingresar', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Ingresar métricas
+      </button>
+      <button class="nav-item" onclick="showSection('integrantes', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Integrantes
+      </button>
+      <div class="nav-label" style="margin-top:16px;">Sistema</div>
+      <button class="nav-item" onclick="showSection('configuracion', this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configuración
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div>Período activo</div>
+      <div id="period-display"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Ocultar/mostrar barra lateral" data-tip="Ocultar panel">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+        <div class="topbar-title" id="topbar-title">General del team</div>
+      </div>
+      <div class="topbar-right">
+        <span id="conn-status" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--text-3);padding:0 6px;"></span>
+        <button onclick="showFBSetup()" title="Configurar Firebase" style="width:28px;height:28px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='var(--surface)'">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.5 9.5L12 3l7.5 6.5V20a1 1 0 01-1 1h-4v-5h-5v5h-4a1 1 0 01-1-1V9.5z"/></svg>
+        </button>
+        <div class="period-toggle">
+          <button class="ptbtn active" id="pt-mes" onclick="setPeriodMode('mes',this)">Mes</button>
+          <button class="ptbtn" id="pt-semana" onclick="setPeriodMode('semana',this)">Semana</button>
+        </div>
+        <div class="month-ctrl">
+          <button class="mbtn" onclick="chgPeriod(-1)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="mlabel" id="mlabel"></span>
+          <button class="mbtn" onclick="chgPeriod(1)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- GENERAL -->
+      <div id="sec-general" class="section active">
+        <div class="kpi-grid-6" id="kpi-grid"></div>
+        <div class="rev-breakdown" id="rev-breakdown"></div>
+        <div class="sec-head">
+          <span class="sec-title">Ranking del equipo</span>
+          <span class="sec-sub" id="team-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:42px;">#</th>
+                <th style="width:180px;">Integrante</th>
+                <th style="width:100px;">Revenue</th>
+                <th style="width:64px;">Ads</th>
+                <th style="width:64px;">Promos</th>
+                <th style="width:64px;">Fotos</th>
+                <th style="width:64px;">Videos</th>
+                <th style="width:90px;">QA score</th>
+                <th style="width:100px;">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="team-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INDIVIDUAL -->
+      <div id="sec-individual" class="section">
+        <div class="sec-head" style="margin-bottom:16px;">
+          <span class="sec-title">Ficha por integrante</span>
+          <div class="view-toggle">
+            <button class="vtbtn active" id="vt-cards" onclick="setIndView('cards',this)" title="Tarjetas">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>
+              Tarjetas
+            </button>
+            <button class="vtbtn" id="vt-compact" onclick="setIndView('compact',this)" title="Lista">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              Lista
+            </button>
+            <button class="vtbtn" id="vt-table" onclick="setIndView('table',this)" title="Tabla">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+              Tabla
+            </button>
+          </div>
+        </div>
+        <div id="ind-grid"></div>
+      </div>
+
+      <!-- REUNIONES -->
+      <div id="sec-reuniones" class="section">
+        <div class="sec-head" style="margin-bottom:16px;">
+          <span class="sec-title">Reuniones del período</span>
+          <span class="sec-sub" id="meetings-count"></span>
+        </div>
+        <div class="meeting-form" id="meeting-form">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">Nueva reunión</div>
+          <div class="meeting-form-row">
+            <input type="date" class="mf-date" id="mf-date">
+            <select class="mf-type" id="mf-type">
+              <option>Team Huddle</option>
+              <option>QA Huddle</option>
+              <option>1:1</option>
+            </select>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:600;color:var(--text-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Asistentes</div>
+            <div id="mf-attendees-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px;"></div>
+            <div style="display:flex;gap:6px;">
+              <select id="mf-att-select" style="font-family:var(--font);font-size:12px;padding:5px 8px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--text);outline:none;cursor:pointer;flex:1;"></select>
+              <button class="att-add-btn" onclick="addAttToForm()">+ Añadir</button>
+            </div>
+          </div>
+          <textarea class="mf-notes" id="mf-notes" placeholder="Notas de la reunión..."></textarea>
+          <div class="mf-actions">
+            <button class="btn-primary" onclick="saveMeeting()">Guardar reunión</button>
+            <button class="btn-ghost" onclick="closeMeetingForm()">Cancelar</button>
+          </div>
+        </div>
+        <div class="meeting-list" id="meeting-list"></div>
+        <button class="add-meeting-btn" onclick="openMeetingForm()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar reunión
+        </button>
+      </div>
+
+      <!-- INGRESAR -->
+      <div id="sec-ingresar" class="section">
+        <div class="sec-head">
+          <span class="sec-title">Editar métricas</span>
+          <span class="sec-sub">Haz clic en cualquier valor para editarlo</span>
+        </div>
+        <div class="table-wrap">
+          <table style="table-layout:fixed;">
+            <thead>
+              <tr>
+                <th style="width:150px;">Integrante</th>
+                <th>Revenue ($)</th>
+                <th style="background:color-mix(in srgb,var(--accent-bg) 60%,var(--thead-bg));">Rev. Ads ($)</th>
+                <th style="background:color-mix(in srgb,var(--purple-bg) 60%,var(--thead-bg));">Rev. Promos ($)</th>
+                <th>Ads</th>
+                <th>Promos</th>
+                <th>Fotos</th>
+                <th>Videos</th>
+                <th>QA /10</th>
+              </tr>
+            </thead>
+            <tbody id="edit-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INTEGRANTES -->
+      <div id="sec-integrantes" class="section">
+        <div class="sec-head" style="margin-bottom:16px;">
+          <span class="sec-title">Gestión de integrantes</span>
+          <span class="sec-sub" id="members-count-lbl"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:12px;display:flex;align-items:center;gap:5px;">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Haz clic en el avatar para elegir un emoji o subir tu propia foto
+        </div>
+        <div class="members-list" id="members-list"></div>
+        <div class="add-member-area">
+          <div class="add-member-title">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            Nuevo integrante
+          </div>
+          <div class="add-member-fields">
+            <input type="text" id="new-name" placeholder="Nombre completo…" maxlength="40" onkeydown="if(event.key==='Enter')addMember()">
+            <button class="add-btn-new" onclick="addMember()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Agregar al equipo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIGURACIÓN -->
+      <div id="sec-configuracion" class="section">
+        <div class="sec-head" style="margin-bottom:20px;">
+          <span class="sec-title">Configuración y personalización</span>
+          <span class="sec-sub">Personaliza la apariencia del panel</span>
+        </div>
+        <div class="cfg-grid">
+
+          <div class="cfg-card">
+            <div class="cfg-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 20a7 7 0 01-7-7c0-3.866 3.134-7 7-7s7 3.134 7 7a7 7 0 01-7 7z"/></svg>
+              Colores principales
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Color de acento</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-accent" value="#4F6EF7" oninput="applyColor('accent',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-accent-hex" value="#4F6EF7" onchange="applyColorHex('accent',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Fondo general</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-bg" value="#F7F7F5" oninput="applyColor('bg',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-bg-hex" value="#F7F7F5" onchange="applyColorHex('bg',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Superficie (cards)</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-surface" value="#FFFFFF" oninput="applyColor('surface',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-surface-hex" value="#FFFFFF" onchange="applyColorHex('surface',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Texto principal</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-text" value="#1A1A18" oninput="applyColor('text',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-text-hex" value="#1A1A18" onchange="applyColorHex('text',this.value)">
+              </div>
+            </div>
+          </div>
+
+          <div class="cfg-card">
+            <div class="cfg-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/></svg>
+              Tabla y encabezados
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Fondo encabezado tabla</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-thead-bg" value="#F2F2F0" oninput="applyColor('thead-bg',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-thead-bg-hex" value="#F2F2F0" onchange="applyColorHex('thead-bg',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Texto encabezado tabla</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-thead-text" value="#9A9A94" oninput="applyColor('thead-text',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-thead-text-hex" value="#9A9A94" onchange="applyColorHex('thead-text',this.value)">
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-3);margin:10px 0 8px;text-transform:uppercase;letter-spacing:.05em;">Iconos KPI</div>
+            <div class="cfg-row">
+              <span class="cfg-label">Icono Revenue</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-kpi1" value="#4F6EF7" oninput="applyColor('kpi1',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-kpi1-hex" value="#4F6EF7" onchange="applyColorHex('kpi1',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Icono Ads</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-kpi2" value="#7C5CFC" oninput="applyColor('kpi2',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-kpi2-hex" value="#7C5CFC" onchange="applyColorHex('kpi2',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Icono QA</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-kpi3" value="#D48A0C" oninput="applyColor('kpi3',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-kpi3-hex" value="#D48A0C" onchange="applyColorHex('kpi3',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Icono Contenido</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-kpi4" value="#0EA87A" oninput="applyColor('kpi4',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-kpi4-hex" value="#0EA87A" onchange="applyColorHex('kpi4',this.value)">
+              </div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text-2);">
+                <input type="checkbox" id="cfg-sync-kpi" onchange="toggleSyncKPI(this.checked)" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;">
+                Sincronizar iconos KPI con acento
+              </label>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px;margin-left:22px;">Al activar, los 4 iconos seguirán el color de acento</div>
+            </div>
+          </div>
+
+          <div class="cfg-card">
+            <div class="cfg-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Colores de estado
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Verde (éxito)</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-green" value="#18A86B" oninput="applyColor('green',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-green-hex" value="#18A86B" onchange="applyColorHex('green',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Ámbar (alerta)</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-amber" value="#D48A0C" oninput="applyColor('amber',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-amber-hex" value="#D48A0C" onchange="applyColorHex('amber',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Rojo (bajo)</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-red" value="#E0433A" oninput="applyColor('red',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-red-hex" value="#E0433A" onchange="applyColorHex('red',this.value)">
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Púrpura</span>
+              <div class="cfg-color-wrap">
+                <input type="color" id="cfg-purple" value="#7C5CFC" oninput="applyColor('purple',this.value)">
+                <input type="text" class="cfg-hex" id="cfg-purple-hex" value="#7C5CFC" onchange="applyColorHex('purple',this.value)">
+              </div>
+            </div>
+          </div>
+
+          <div class="cfg-card">
+            <div class="cfg-card-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+              Nombre y tipografía
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Nombre del panel</span>
+              <input type="text" class="cfg-logo-input" id="cfg-logo-name" value="Team Metrics" oninput="applyLogoName(this.value)">
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Fuente</span>
+              <select class="cfg-font-select" id="cfg-font" onchange="applyFont(this.value)">
+                <optgroup label="Modernas">
+                  <option value="'Inter', sans-serif">Inter</option>
+                  <option value="'DM Sans', sans-serif">DM Sans</option>
+                  <option value="'Manrope', sans-serif">Manrope</option>
+                  <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+                  <option value="'Outfit', sans-serif">Outfit</option>
+                  <option value="'Sora', sans-serif">Sora</option>
+                </optgroup>
+                <optgroup label="Populares">
+                  <option value="'Roboto', sans-serif">Roboto</option>
+                  <option value="'Poppins', sans-serif">Poppins</option>
+                  <option value="'Nunito', sans-serif">Nunito</option>
+                  <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                </optgroup>
+                <optgroup label="Sistema">
+                  <option value="system-ui, sans-serif">System UI</option>
+                  <option value="-apple-system, BlinkMacSystemFont, sans-serif">SF Pro (macOS)</option>
+                  <option value="'Segoe UI', sans-serif">Segoe UI (Windows)</option>
+                </optgroup>
+                <optgroup label="Serif">
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Tamaño base</span>
+              <div class="cfg-range">
+                <input type="range" min="12" max="16" value="14" id="cfg-fontsize" oninput="applyFontSize(this.value)">
+                <span id="cfg-fontsize-val">14px</span>
+              </div>
+            </div>
+            <div class="cfg-row">
+              <span class="cfg-label">Radio de bordes</span>
+              <div class="cfg-range">
+                <input type="range" min="0" max="20" value="10" id="cfg-radius" oninput="applyRadius(this.value)">
+                <span id="cfg-radius-val">10px</span>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+              <button class="btn-primary" style="width:100%;justify-content:center;display:flex;" onclick="applyPreset('dark')">🌙 Tema oscuro</button>
+              <button class="btn-primary" style="width:100%;justify-content:center;display:flex;background:var(--teal);" onclick="applyPreset('teal')">🌊 Tema teal</button>
+              <button class="btn-primary" style="width:100%;justify-content:center;display:flex;background:var(--purple);" onclick="applyPreset('purple')">💜 Tema púrpura</button>
+              <button class="btn-ghost" style="width:100%;justify-content:center;display:flex;" onclick="resetConfig()">↩ Restaurar defaults</button>
+              <button class="btn-ghost" style="width:100%;justify-content:center;display:flex;margin-top:4px;color:var(--red-text);border-color:var(--red-bg);" onclick="clearState()">🗑 Borrar datos guardados</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Guardado</div>
+
+<script>
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+const PALETTES = [
+  {bg:'#F0ECFF', color:'#5438C2', bar:'#7C5CFC'},
+  {bg:'#E4F7F1', color:'#0A7757', bar:'#0EA87A'},
+  {bg:'#FEECE7', color:'#B0371D', bar:'#E85D3A'},
+  {bg:'#FEF3DC', color:'#9A6008', bar:'#D48A0C'},
+  {bg:'#EEF1FE', color:'#2D4BD4', bar:'#4F6EF7'},
+  {bg:'#FEECEB', color:'#A32D26', bar:'#E0433A'},
+];
+
+let curMonth = new Date().getMonth();
+let curYear  = new Date().getFullYear();
+let curWeek  = getWeekNum(new Date()); // ISO week number
+let curWeekYear = curYear;
+let periodMode = 'mes'; // 'mes' | 'semana'
+
+let members = [
+  {id:1, name:'Ana García'},
+  {id:2, name:'Luis Torres'},
+  {id:3, name:'María López'},
+  {id:4, name:'Carlos Ruiz'},
+];
+let data = {};
+let meetings = {};
+
+/* ── Period helpers ──────────────────────────── */
+function getWeekNum(d){
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+}
+
+function getWeekDates(week, year){
+  // Returns {start, end} as Date objects for given ISO week
+  const jan4 = new Date(year, 0, 4);
+  const dayOfWeek = jan4.getDay() || 7;
+  const monday = new Date(jan4.getTime() - (dayOfWeek - 1) * 86400000 + (week - 1) * 7 * 86400000);
+  const sunday = new Date(monday.getTime() + 6 * 86400000);
+  return {start: monday, end: sunday};
+}
+
+function dk(mid){
+  if(periodMode === 'mes') return `m-${curYear}-${curMonth}-${mid}`;
+  return `w-${curWeekYear}-${curWeek}-${mid}`;
+}
+function mk(){
+  if(periodMode === 'mes') return `m-${curYear}-${curMonth}`;
+  return `w-${curWeekYear}-${curWeek}`;
+}
+function getE(mid){ return data[dk(mid)] || {revenue:0,ads:0,promos:0,photos:0,videos:0,qa:0,revenue_ads:0,revenue_promos:0}; }
+function setF(mid,field,val){ const k=dk(mid); if(!data[k]) data[k]={revenue:0,ads:0,promos:0,photos:0,videos:0,qa:0,revenue_ads:0,revenue_promos:0}; data[k][field]=+val; }
+function getMeetings(){ return meetings[mk()] || []; }
+
+function setPeriodMode(mode, btn){
+  periodMode = mode;
+  document.querySelectorAll('.ptbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateHeader();
+  renderAll();
+  renderMeetings();
+  debounceSave();
+}
+
+function chgPeriod(d){
+  if(periodMode === 'mes'){
+    curMonth += d;
+    if(curMonth > 11){ curMonth = 0; curYear++; }
+    if(curMonth < 0){ curMonth = 11; curYear--; }
+  } else {
+    curWeek += d;
+    // Handle week overflow
+    const weeksInYear = getWeeksInYear(curWeekYear);
+    if(curWeek > weeksInYear){ curWeek = 1; curWeekYear++; }
+    if(curWeek < 1){ curWeekYear--; curWeek = getWeeksInYear(curWeekYear); }
+  }
+  updateHeader();
+  renderAll();
+  renderMeetings();
+  debounceSave();
+}
+
+function getWeeksInYear(year){
+  const dec28 = new Date(year, 11, 28);
+  return getWeekNum(dec28);
+}
+
+function updateHeader(){
+  let label, sub;
+  if(periodMode === 'mes'){
+    label = MONTHS[curMonth] + ' ' + curYear;
+  } else {
+    const {start, end} = getWeekDates(curWeek, curWeekYear);
+    const fmt = d => `${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
+    label = `Semana ${curWeek} — ${fmt(start)} al ${fmt(end)}`;
+  }
+  document.getElementById('mlabel').textContent = label;
+  document.getElementById('period-display').textContent = label;
+}
+
+function pal(idx){ return PALETTES[idx % PALETTES.length]; }
+function initials(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function fmt$(n){ const v=+n; return (v<0?'-$':'$')+Math.abs(Math.round(v)).toLocaleString(); }
+function fmtN(n){ return (+n).toLocaleString(); }
+
+function score(mid){
+  const e = getE(mid);
+  return Math.round((+e.revenue/500)+(+e.ads*3)+(+e.promos*2)+(+e.qa*5)+(+e.photos*.5)+(+e.videos));
+}
+
+function totals(){
+  let r={revenue:0,ads:0,promos:0,photos:0,videos:0,qa:0,qc:0};
+  members.forEach(m=>{
+    const e=getE(m.id);
+    r.revenue+=+e.revenue; r.ads+=+e.ads; r.promos+=+e.promos;
+    r.photos+=+e.photos; r.videos+=+e.videos;
+    if(+e.qa>0){ r.qa+=+e.qa; r.qc++; }
+  });
+  r.qa = r.qc ? +(r.qa/r.qc).toFixed(1) : 0;
+  return r;
+}
+
+/* ── KPI cards ───────────────────────────────── */
+function renderKPI(){
+  const t = totals(); const n = members.length||1;
+  const totalAds = members.reduce((s,m)=>s+(+getE(m.id).revenue_ads),0);
+  const totalPromos = members.reduce((s,m)=>s+(+getE(m.id).revenue_promos),0);
+  const cards = [
+    {ibg:'var(--kpi-icon-bg-1)', ic:'var(--kpi-icon-c-1)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v12M8 10s1-2 4-2 4 1.5 4 3-2 3-4 3-4 1.5-4 3 1.5 3 4 3 4-2 4-2"/></svg>`,
+     val:fmt$(t.revenue), lbl:'Revenue total', sub:`Promedio ${fmt$(t.revenue/n)} por persona`},
+    {ibg:'var(--kpi-icon-bg-2)', ic:'var(--kpi-icon-c-2)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 8s-4-5-10-5S2 8 2 8s4 5 10 5 10-5 10-5z"/><circle cx="12" cy="8" r="3"/></svg>`,
+     val:fmt$(totalAds), lbl:'Revenue por Ads', sub:`${fmtN(t.ads)} ads creados`},
+    {ibg:'var(--kpi-icon-bg-3)', ic:'var(--kpi-icon-c-3)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>`,
+     val:fmt$(totalPromos), lbl:'Revenue por Promos', sub:`${fmtN(t.promos)} promos generadas`},
+    {ibg:'var(--kpi-icon-bg-4)', ic:'var(--kpi-icon-c-4)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+     val:t.qa.toFixed(1)+'/10', lbl:'QA score promedio', sub: t.qa>=8?'Rendimiento excelente':t.qa>=6?'Rendimiento regular':'Requiere atención'},
+    {ibg:'var(--kpi-icon-bg-1)', ic:'var(--kpi-icon-c-1)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+     val:fmtN(t.photos+t.videos), lbl:'Contenido total', sub:`${fmtN(t.photos)} fotos · ${fmtN(t.videos)} videos`},
+    {ibg:'var(--kpi-icon-bg-2)', ic:'var(--kpi-icon-c-2)',
+     icon:`<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M4 20c0-4 3.584-7 8-7s8 3 8 7"/><path d="M19 8l2 2 4-4" opacity=".6"/></svg>`,
+     val:fmtN(members.length), lbl:'Integrantes', sub:`${members.filter(m=>+getE(m.id).qa>=8).length} con QA excelente`},
+  ];
+  document.getElementById('kpi-grid').innerHTML = cards.map(c=>`
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap" style="background:${c.ibg}; color:${c.ic};">${c.icon}</div>
+      <div class="kpi-val">${c.val}</div>
+      <div class="kpi-lbl">${c.lbl}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+/* ── Revenue Breakdown ──────────────────────────── */
+function renderRevBreakdown(){
+  const el = document.getElementById('rev-breakdown');
+  if(!el) return;
+  // Compute per-member rev_ads and rev_promos
+  const adsData = members.map((m,i)=>({m, e:getE(m.id), p:pal(i)}));
+  const maxAds = Math.max(1, ...adsData.map(d=>Math.abs(+d.e.revenue_ads)));
+  const maxPromos = Math.max(1, ...adsData.map(d=>Math.abs(+d.e.revenue_promos)));
+  const totalAds = adsData.reduce((s,d)=>s+(+d.e.revenue_ads),0);
+  const totalPromos = adsData.reduce((s,d)=>s+(+d.e.revenue_promos),0);
+
+  function makeCard(title, icon, total, max, rows){
+    return `<div class="rev-card">
+      <div class="rev-card-head">
+        <span class="rev-card-title">${icon} ${title}</span>
+        <span class="rev-card-total">${fmt$(total)}</span>
+      </div>
+      <div class="rev-bar-list">
+        ${rows.map(({m,val,p})=>`<div class="rev-bar-row">
+          <div class="rev-bar-label">${memberAvSmall(m,p)} ${m.name}</div>
+          <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${Math.min(Math.round((Math.abs(val)/max)*100),100)}%;background:${val<0?'var(--red)':p.bar};"></div></div>
+          <span class="rev-bar-val${val<0?' neg':''}">${fmt$(val)}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  const adsIcon = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 8s-4-5-10-5S2 8 2 8s4 5 10 5 10-5 10-5z"/><circle cx="12" cy="8" r="3"/></svg>`;
+  const promoIcon = `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>`;
+
+  el.innerHTML =
+    makeCard('Revenue por Ads', adsIcon, totalAds, maxAds,
+      adsData.map(d=>({m:d.m, val:+d.e.revenue_ads, p:d.p}))) +
+    makeCard('Revenue por Promos', promoIcon, totalPromos, maxPromos,
+      adsData.map(d=>({m:d.m, val:+d.e.revenue_promos, p:d.p})));
+}
+
+function memberAvSmall(m, p){
+  if(m.photo) return `<img src="${m.photo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+  return `<div style="width:18px;height:18px;border-radius:50%;background:${p.bg};color:${p.color};font-size:7px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials(m.name)}</div>`;
+}
+
+function statusChip(e){
+  const qa=+e.qa, rev=+e.revenue;
+  if(qa===0&&rev===0) return '<span class="chip chip-n">Sin datos</span>';
+  if(qa>=8) return '<span class="chip chip-g">Excelente</span>';
+  if(qa>=6) return '<span class="chip chip-a">Regular</span>';
+  return '<span class="chip chip-r">Bajo</span>';
+}
+
+function rankIcon(i){ return i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1; }
+
+function numCell(val){
+  const v = +val;
+  return `<td class="${v<0?'num-neg':'num'}">${fmtN(v)}</td>`;
+}
+
+function renderTeamTable(){
+  const ranked = [...members].map((m,oi)=>({...m,oi,sc:score(m.id)})).sort((a,b)=>b.sc-a.sc);
+  document.getElementById('team-count').textContent = members.length + ' integrantes · ordenado por puntuación';
+  document.getElementById('team-tbody').innerHTML = ranked.map((m,ri)=>{
+    const e=getE(m.id); const p=pal(m.oi);
+    const qpct = Math.min(Math.round((+e.qa/10)*100),100);
+    return `<tr>
+      <td class="rank-num">${rankIcon(ri)}</td>
+      <td><div class="av-wrap">
+        ${m.photo ? `<img src="${m.photo}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : `<div class="av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
+        <span class="av-name">${m.name}</span>
+      </div></td>
+      <td class="${+e.revenue<0?'num-neg':'num'}" style="font-weight:600;">${fmt$(e.revenue)}</td>
+      ${numCell(e.ads)}${numCell(e.promos)}${numCell(e.photos)}${numCell(e.videos)}
+      <td><div class="score-bar">
+        <div class="bar-bg"><div class="bar-fg" style="width:${qpct}%;background:${p.bar};"></div></div>
+        <span class="bar-val">${(+e.qa).toFixed(1)}</span>
+      </div></td>
+      <td>${statusChip(e)}</td>
+    </tr>`;
+  }).join('');
+}
+
+let indView = 'cards'; // 'cards' | 'compact' | 'table'
+function setIndView(v, btn){
+  indView = v;
+  document.querySelectorAll('.vtbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderIndGrid();
+}
+
+function renderIndGrid(){
+  const svgs = {
+    revenue:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v12M8 10s1-2 4-2 4 1.5 4 3-2 3-4 3-4 1.5-4 3 1.5 3 4 3 4-2 4-2"/></svg>`,
+    revenue_ads:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 8s-4-5-10-5S2 8 2 8s4 5 10 5 10-5 10-5z"/><circle cx="12" cy="8" r="3"/></svg>`,
+    revenue_promos:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>`,
+    ads:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 8s-4-5-10-5S2 8 2 8s4 5 10 5 10-5 10-5z"/><circle cx="12" cy="8" r="3"/></svg>`,
+    promos:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>`,
+    photos:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/></svg>`,
+    videos:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l6-3v10l-6-3V10z"/></svg>`,
+    qa:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  };
+  const container = document.getElementById('ind-grid');
+
+  if(indView === 'cards'){
+    container.className = 'ind-grid';
+    container.innerHTML = members.map((m,i)=>{
+      const e=getE(m.id); const p=pal(i);
+      const rows=[
+        ['revenue','Revenue total',fmt$(e.revenue),+e.revenue,Math.abs(+e.revenue)/2000],
+        ['revenue_ads','Revenue Ads',fmt$(e.revenue_ads),+e.revenue_ads,Math.abs(+e.revenue_ads)/1000],
+        ['revenue_promos','Revenue Promos',fmt$(e.revenue_promos),+e.revenue_promos,Math.abs(+e.revenue_promos)/1000],
+        ['ads','Ads creados',fmtN(e.ads),+e.ads,Math.abs(+e.ads)/50],
+        ['promos','Promos',fmtN(e.promos),+e.promos,Math.abs(+e.promos)/30],
+        ['photos','Fotos',fmtN(e.photos),+e.photos,Math.abs(+e.photos)/100],
+        ['videos','Videos',fmtN(e.videos),+e.videos,Math.abs(+e.videos)/50],
+        ['qa','QA score',(+e.qa).toFixed(1)+'/10',+e.qa,(+e.qa/10)],
+      ];
+      return `<div class="ind-card">
+        <div class="ind-card-top">
+          ${m.photo ? `<img src="${m.photo}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="ind-av" style="background:${p.bg};color:${p.color};">${m.icon}</div>` : `<div class="ind-av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
+          <div class="ind-name">${m.name}</div>
+        </div>
+        <div class="ind-body">
+          ${rows.map(([key,label,val,raw,pct])=>`<div class="ind-row">
+            <span class="ind-key">${svgs[key]||''} ${label}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar-bg"><div class="ind-bar-fg" style="width:${Math.min(Math.round(Math.abs(pct)*100),100)}%;background:${raw<0?'var(--red)':p.bar};"></div></div>
+              <span class="ind-val${raw<0?' neg':''}">${val}</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if(indView === 'compact'){
+    container.className = '';
+    const headerLabels = ['Revenue','Ads','Promos','Fotos','Videos','QA'];
+    const rows = members.map((m,i)=>{
+      const e=getE(m.id); const p=pal(i);
+      const vals=[
+        {v:fmt$(e.revenue), neg:+e.revenue<0},
+        {v:fmtN(e.ads), neg:false},
+        {v:fmtN(e.promos), neg:+e.promos<0},
+        {v:fmtN(e.photos), neg:false},
+        {v:fmtN(e.videos), neg:false},
+        {v:(+e.qa).toFixed(1), neg:false},
+      ];
+      return `<div class="ind-compact-row">
+        <div class="ind-compact-name">
+          ${m.photo ? `<img src="${m.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>` : `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:10px;flex-shrink:0;">${initials(m.name)}</div>`}
+          <span style="font-size:13px;font-weight:500;color:var(--text);">${m.name}</span>
+        </div>
+        <div class="ind-compact-metrics">
+          ${vals.map((v,j)=>`<div class="ind-compact-cell">
+            <div class="lbl">${headerLabels[j]}</div>
+            <div class="val${v.neg?' neg':''}">${v.v}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+    container.innerHTML = `<div class="ind-compact">${rows.join('')}</div>`;
+
+  } else if(indView === 'table'){
+    container.className = '';
+    const ths = ['Integrante','Revenue','Ads','Promos','Fotos','Videos','QA /10'];
+    const bodyRows = members.map((m,i)=>{
+      const e=getE(m.id); const p=pal(i);
+      return `<tr>
+        <td><div class="av-wrap">
+          <div class="av" style="background:${p.bg};color:${p.color};width:26px;height:26px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`:initials(m.name)}</div>
+          <span style="font-size:13px;font-weight:500;">${m.name}</span>
+        </div></td>
+        <td class="${+e.revenue<0?'num-neg':'num'}" style="font-weight:600;">${fmt$(e.revenue)}</td>
+        <td class="num">${fmtN(e.ads)}</td>
+        <td class="${+e.promos<0?'num-neg':'num'}">${fmtN(e.promos)}</td>
+        <td class="num">${fmtN(e.photos)}</td>
+        <td class="num">${fmtN(e.videos)}</td>
+        <td class="num">${(+e.qa).toFixed(1)}</td>
+      </tr>`;
+    });
+    container.innerHTML = `<div class="ind-table-wrap">
+      <table style="table-layout:fixed;">
+        <thead><tr>
+          ${ths.map((h,i)=>`<th style="${i===0?'width:180px;text-align:left;':''}">${h}</th>`).join('')}
+        </tr></thead>
+        <tbody>${bodyRows.join('')}</tbody>
+      </table>
+    </div>`;
+  }
+}
+
+const FIELDS = ['revenue','revenue_ads','revenue_promos','ads','promos','photos','videos','qa'];
+function renderEditTable(){
+  document.getElementById('edit-tbody').innerHTML = members.map((m,i)=>{
+    const e=getE(m.id); const p=pal(i);
+    return `<tr>
+      <td><div class="av-wrap">
+        <div class="av" style="background:${p.bg};color:${p.color};width:24px;height:24px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">`:initials(m.name)}</div>
+        <span style="font-size:13px;font-weight:500;">${m.name}</span>
+      </div></td>
+      ${FIELDS.map(f=>`<td><input class="editable" type="number" value="${e[f]||0}" data-mid="${m.id}" data-field="${f}" onchange="cellChange(this)" step="${f==='qa'?.1:1}"></td>`).join('')}
+    </tr>`;
+  }).join('');
+}
+
+function cellChange(el){
+  setF(+el.dataset.mid, el.dataset.field, el.value);
+  renderKPI(); renderTeamTable(); renderIndGrid();
+  showToast(); debounceSave();
+}
+
+/* ── Members manager ─────────────────────────── */
+function memberAv(m, p, size=28, fontSize=10){
+  if(m.photo) return `<img src="${m.photo}" class="av-img" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+  if(m.icon) return `<div class="av" style="background:${p.bg};color:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size*0.5)}px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>`;
+  return `<div class="av" style="background:${p.bg};color:${p.color};width:${size}px;height:${size}px;font-size:${fontSize}px;flex-shrink:0;">${initials(m.name)}</div>`;
+}
+
+const EMOJI_CATS = {
+  'Personas': ['😀','😃','😄','😁','😆','😎','🤩','🥳','🤓','😏','😌','🧐','🤗','😤','🥸','🤠','🫡','🧑‍💻','👩‍💼','👨‍💼','🧑‍🎨','👩‍🎤','👨‍🎤','🦸','🦹','🧙','🧝','🧛','🧜','🧚','🧞','🧟','🫅','🤴','👸'],
+  'Animales': ['🦊','🐯','🦁','🐼','🐸','🦋','🦄','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧','🐦','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🦂','🐢','🦎','🐍','🦕','🦖','🦎'],
+  'Naturaleza': ['⭐','🌟','💫','✨','🌙','☀️','🌤️','⛅','🌈','⚡','❄️','🌊','🔥','🌺','🌸','🌼','🌻','🌹','🌷','🍀','🌿','🍃','🍂','🍁','🌾','🌵','🌴','🌳','🎋','🎍'],
+  'Objetos': ['💎','🚀','🎯','🏆','💡','🎨','🎭','🎪','🎸','🎮','🧩','💻','📱','📸','🎬','🎤','🎧','🎻','🥁','🪗','🎹','🪈','🎺','🎷','🪕','🎙️','📡','🔭','🔬','🧬','💊','🔑','🗝️','🔐','🔒','🔓','🛡️','⚔️','🏹','🪃','🪖','🛸','🚁','✈️','🛩️','🚀','🛶','⛵','🚂','🚗','🏎️','🛻','🚕','🚙'],
+  'Comida': ['🍕','🍔','🌮','🍜','🍣','🍦','🎂','🍩','🍪','☕','🧋','🍺','🥂','🍷','🫖','🧃','🥤','🍸','🍹','🍫','🍬','🍭','🍮','🍰','🧁','🍩','🍪'],
+  'Símbolos': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☯️','🕉️','☪️','✡️','🔯','🆚','🆒','🆓','🆕','🅰️','🅱️','🅾️','🆘','⚠️','🚫','⛔','🎌','🏴','🏳️']
+};
+const EMOJI_ICONS = Object.values(EMOJI_CATS).flat();
+
+let activePickerId = null;
+
+function renderMembersList(){
+  const lbl = document.getElementById('members-count-lbl');
+  if(lbl) lbl.textContent = members.length + ' integrantes';
+  const list = document.getElementById('members-list');
+  if(!list) return;
+  list.innerHTML = members.map((m,i)=>{
+    const p = pal(i);
+    const avHTML = memberAv(m, p, 36, 12);
+    return `<div class="member-row" id="member-row-${m.id}">
+      <div class="icon-picker-wrap">
+        <button class="member-av-btn" style="width:36px;height:36px;border-radius:50%;overflow:visible;flex-shrink:0;" onclick="toggleIconPicker(${m.id}, event)" title="Cambiar icono o foto">
+          <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;position:relative;flex-shrink:0;">
+            ${avHTML}
+            <div class="av-upload-overlay"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          </div>
+        </button>
+        <div class="icon-picker-dropdown" id="icon-picker-${m.id}" style="min-width:290px;">
+          <input type="text" class="emoji-search" placeholder="Buscar emoji…" oninput="filterEmojis(${m.id},this.value)" onclick="event.stopPropagation()">
+          <div class="emoji-cats" id="emoji-cats-${m.id}">
+            ${Object.keys(EMOJI_CATS).map((cat,ci)=>`<button class="emoji-cat-btn${ci===0?' active':''}" onclick="setEmojiCat(${m.id},'${cat}',this)">${cat}</button>`).join('')}
+            <button class="emoji-cat-btn" onclick="setEmojiCat(${m.id},'all',this)">Todos</button>
+          </div>
+          <div class="icon-picker-grid" id="emoji-grid-${m.id}" style="max-height:200px;">
+            ${EMOJI_CATS[Object.keys(EMOJI_CATS)[0]].map(e=>`<button class="icon-picker-emoji" onclick="setMemberIcon(${m.id},'${e}')" title="${e}">${e}</button>`).join('')}
+          </div>
+          <button class="icon-upload-btn" onclick="triggerPhotoUpload(${m.id})">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Subir imagen personalizada
+          </button>
+          ${(m.photo||m.icon)?`<button class="icon-remove-btn" onclick="clearMemberIcon(${m.id})">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6"/></svg>
+            Quitar icono / foto
+          </button>`:''}
+        </div>
+      </div>
+      <span class="member-row-name">${m.name}</span>
+      <button class="member-del" onclick="removeMember(${m.id})" title="Eliminar" data-tip="Eliminar integrante">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      </button>
+    </div>`;
+  }).join('') || '<div style="font-size:13px;color:var(--text-3);padding:10px 0;">No hay integrantes</div>';
+}
+
+function toggleIconPicker(id, e){
+  e.stopPropagation();
+  const picker = document.getElementById('icon-picker-'+id);
+  const wasOpen = picker.classList.contains('open');
+  // Close all pickers
+  document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+  activePickerId = null;
+  if(!wasOpen){ picker.classList.add('open'); activePickerId = id; }
+}
+
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+  activePickerId = null;
+});
+
+function setMemberIcon(id, emoji){
+  const m = members.find(x=>x.id===id);
+  if(m){ m.icon = emoji; m.photo = null; renderAll(); renderMembersList(); showToast(); saveState(); }
+  document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+}
+
+function clearMemberIcon(id){
+  const m = members.find(x=>x.id===id);
+  if(m){ m.icon = null; m.photo = null; renderAll(); renderMembersList(); showToast(); saveState(); }
+  document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+}
+
+function triggerPhotoUpload(id){
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange = e => {
+    const file = e.target.files[0]; if(!file) return;
+    if(file.size > 2*1024*1024){ alert('La imagen debe ser menor a 2MB'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const m = members.find(x=>x.id===id);
+      if(m){ m.photo = ev.target.result; m.icon = null; renderAll(); renderMembersList(); showToast(); saveState(); }
+    };
+    reader.readAsDataURL(file);
+  };
+  document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+  inp.click();
+}
+
+function addMember(){
+  const n=document.getElementById('new-name').value.trim();
+  if(!n) return;
+  members.push({id:Date.now(), name:n, role:''});
+  document.getElementById('new-name').value='';
+  renderAll();
+  renderMembersList();
+  showToast();
+  saveState();
+}
+
+function removeMember(id){
+  if(members.length <= 1){ alert('Debe haber al menos un integrante'); return; }
+  members = members.filter(m=>m.id!==id);
+  renderAll();
+  renderMembersList();
+  showToast();
+  saveState();
+}
+
+/* ── Reuniones ───────────────────────────────── */
+let mfAttendees = [];
+
+function openMeetingForm(){
+  mfAttendees = [];
+  document.getElementById('mf-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mf-notes').value = '';
+  renderMFAttendeeTags();
+  populateMFSelect();
+  document.getElementById('meeting-form').classList.add('open');
+}
+function closeMeetingForm(){ document.getElementById('meeting-form').classList.remove('open'); }
+
+function populateMFSelect(){
+  const sel = document.getElementById('mf-att-select');
+  const avail = members.filter(m=>!mfAttendees.includes(m.id));
+  sel.innerHTML = avail.length ? avail.map(m=>`<option value="${m.id}">${m.name}</option>`).join('') : '<option disabled>Todos añadidos</option>';
+}
+
+function addAttToForm(){
+  const sel = document.getElementById('mf-att-select');
+  const id = +sel.value;
+  if(id && !mfAttendees.includes(id)) mfAttendees.push(id);
+  renderMFAttendeeTags(); populateMFSelect();
+}
+function removeAttFromForm(id){
+  mfAttendees = mfAttendees.filter(x=>x!==id);
+  renderMFAttendeeTags(); populateMFSelect();
+}
+function renderMFAttendeeTags(){
+  document.getElementById('mf-attendees-tags').innerHTML = mfAttendees.map(id=>{
+    const m=members.find(x=>x.id===id); if(!m) return '';
+    return `<span class="attendee-tag">${m.name} <button class="rm-att" onclick="removeAttFromForm(${id})">×</button></span>`;
+  }).join('');
+}
+
+function saveMeeting(){
+  const date = document.getElementById('mf-date').value;
+  const type = document.getElementById('mf-type').value;
+  const notes = document.getElementById('mf-notes').value.trim();
+  if(!date){ alert('Selecciona una fecha'); return; }
+  const key = mk();
+  if(!meetings[key]) meetings[key]=[];
+  meetings[key].push({id:Date.now(), date, type, attendees:[...mfAttendees], notes});
+  meetings[key].sort((a,b)=>b.date.localeCompare(a.date));
+  closeMeetingForm(); renderMeetings(); showToast(); saveState();
+}
+
+function deleteMeeting(id){
+  const key=mk();
+  if(meetings[key]) meetings[key]=meetings[key].filter(m=>m.id!==id);
+  renderMeetings(); saveState();
+}
+
+function addAttToMeeting(meetingId){
+  const key=mk();
+  const meeting=(meetings[key]||[]).find(m=>m.id===meetingId);
+  if(!meeting) return;
+  const sel=document.getElementById('att-sel-'+meetingId);
+  const id=+sel.value;
+  if(id && !meeting.attendees.includes(id)){ meeting.attendees.push(id); renderMeetings(); saveState(); }
+}
+
+function removeAttFromMeeting(mid, meetingId){
+  const key=mk();
+  const meeting=(meetings[key]||[]).find(m=>m.id===meetingId);
+  if(!meeting) return;
+  meeting.attendees=meeting.attendees.filter(x=>x!==mid);
+  renderMeetings(); saveState();
+}
+
+function saveMeetingNotes(meetingId, val){
+  const key=mk();
+  const meeting=(meetings[key]||[]).find(m=>m.id===meetingId);
+  if(meeting){ meeting.notes=val; showToast(); debounceSave(); }
+}
+
+function renderMeetings(){
+  const list=getMeetings();
+  const countEl=document.getElementById('meetings-count');
+  if(countEl) countEl.textContent = list.length+(list.length===1?' reunión':' reuniones')+' este período';
+  const listEl=document.getElementById('meeting-list');
+  if(!listEl) return;
+  if(!list.length){
+    listEl.innerHTML=`<div class="empty-state">
+      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <div>No hay reuniones registradas este período</div>
+    </div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(meeting=>{
+    const avail=members.filter(m=>!meeting.attendees.includes(m.id));
+    const attHTML=meeting.attendees.map(id=>{
+      const m=members.find(x=>x.id===id); if(!m) return '';
+      return `<span class="attendee-tag">${m.name} <button class="rm-att" onclick="removeAttFromMeeting(${id},${meeting.id})">×</button></span>`;
+    }).join('');
+    const availSel=avail.length?`<select id="att-sel-${meeting.id}" style="font-family:var(--font);font-size:12px;padding:4px 7px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--text);outline:none;cursor:pointer;">
+      ${avail.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}
+    </select>
+    <button class="att-add-btn" onclick="addAttToMeeting(${meeting.id})">+ Añadir</button>`:`<span style="font-size:11px;color:var(--text-3);">Todos los miembros añadidos</span>`;
+    return `<div class="meeting-card">
+      <div class="meeting-head">
+        <div class="meeting-head-left">
+          <span class="meeting-date">${formatDate(meeting.date)}</span>
+          <span class="meeting-type">${meeting.type}</span>
+        </div>
+        <button class="meeting-del" onclick="deleteMeeting(${meeting.id})">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div class="meeting-body">
+        <div style="font-size:11px;font-weight:600;color:var(--text-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Asistentes</div>
+        <div class="meeting-attendees" style="margin-bottom:8px;">${attHTML||'<span style="font-size:12px;color:var(--text-3);">Sin asistentes</span>'}</div>
+        <div class="meeting-att-add">${availSel}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Notas</div>
+        <textarea class="meeting-notes" placeholder="Notas..." onchange="saveMeetingNotes(${meeting.id},this.value)">${meeting.notes||''}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const [y,m,day]=d.split('-');
+  return `${+day} ${MONTHS[+m-1].slice(0,3)} ${y}`;
+}
+
+/* ── Configuración ───────────────────────────── */
+function hexAdjust(hex, factor){
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,Math.round(r*factor+255*(1-factor)));
+  g=Math.min(255,Math.round(g*factor+255*(1-factor)));
+  b=Math.min(255,Math.round(b*factor+255*(1-factor)));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function darken(hex, factor=0.6){
+  let r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  r=Math.round(r*factor); g=Math.round(g*factor); b=Math.round(b*factor);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+let syncKPI = false;
+function toggleSyncKPI(on){
+  syncKPI = on;
+  if(on){
+    const hex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    syncKPIColors(hex);
+  }
+}
+function syncKPIColors(hex){
+  const root = document.documentElement;
+  const variants = [hex, shiftHue(hex,30), shiftHue(hex,60), shiftHue(hex,90)];
+  variants.forEach((c,i)=>{
+    root.style.setProperty(`--kpi-icon-bg-${i+1}`, hexAdjust(c,0.15));
+    root.style.setProperty(`--kpi-icon-c-${i+1}`, c);
+    const inp = document.getElementById(`cfg-kpi${i+1}`);
+    const hexInp = document.getElementById(`cfg-kpi${i+1}-hex`);
+    if(inp) inp.value = c;
+    if(hexInp) hexInp.value = c;
+  });
+}
+function shiftHue(hex, deg){
+  let r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0,s=max===0?0:d/max,v=max;
+  if(d!==0){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4; h=h*60; if(h<0)h+=360;}
+  h=(h+deg)%360;
+  const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+  let rr,gg,bb;
+  if(h<60){rr=c;gg=x;bb=0;}else if(h<120){rr=x;gg=c;bb=0;}else if(h<180){rr=0;gg=c;bb=x;}else if(h<240){rr=0;gg=x;bb=c;}else if(h<300){rr=x;gg=0;bb=c;}else{rr=c;gg=0;bb=x;}
+  rr=Math.round((rr+m)*255);gg=Math.round((gg+m)*255);bb=Math.round((bb+m)*255);
+  return '#'+[rr,gg,bb].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+function applyColor(key, hex){
+  const root = document.documentElement;
+  if(key==='accent'){
+    root.style.setProperty('--accent', hex);
+    root.style.setProperty('--accent-bg', hexAdjust(hex,0.15));
+    root.style.setProperty('--accent-text', darken(hex,0.6));
+    if(syncKPI) syncKPIColors(hex);
+  } else if(key==='bg'){ root.style.setProperty('--bg', hex);
+  } else if(key==='surface'){
+    root.style.setProperty('--surface', hex);
+    root.style.setProperty('--surface-2', hexAdjust(hex,0.85));
+  } else if(key==='text'){
+    root.style.setProperty('--text', hex);
+    root.style.setProperty('--text-2', hexAdjust(hex,0.45));
+    root.style.setProperty('--text-3', hexAdjust(hex,0.25));
+  } else if(key==='thead-bg'){
+    root.style.setProperty('--thead-bg', hex);
+  } else if(key==='thead-text'){
+    root.style.setProperty('--thead-text', hex);
+  } else if(key==='kpi1'){
+    root.style.setProperty('--kpi-icon-bg-1', hexAdjust(hex,0.15));
+    root.style.setProperty('--kpi-icon-c-1', hex);
+  } else if(key==='kpi2'){
+    root.style.setProperty('--kpi-icon-bg-2', hexAdjust(hex,0.15));
+    root.style.setProperty('--kpi-icon-c-2', hex);
+  } else if(key==='kpi3'){
+    root.style.setProperty('--kpi-icon-bg-3', hexAdjust(hex,0.15));
+    root.style.setProperty('--kpi-icon-c-3', hex);
+  } else if(key==='kpi4'){
+    root.style.setProperty('--kpi-icon-bg-4', hexAdjust(hex,0.15));
+    root.style.setProperty('--kpi-icon-c-4', hex);
+  } else if(['green','amber','red','purple'].includes(key)){
+    root.style.setProperty('--'+key, hex);
+    root.style.setProperty('--'+key+'-bg', hexAdjust(hex,0.12));
+    root.style.setProperty('--'+key+'-text', darken(hex,0.6));
+    if(key==='green'){ root.style.setProperty('--teal',hex); root.style.setProperty('--teal-bg',hexAdjust(hex,0.12)); root.style.setProperty('--teal-text',darken(hex,0.6)); }
+  }
+  const hexEl=document.getElementById('cfg-'+key+'-hex');
+  if(hexEl) hexEl.value=hex;
+  renderAll();
+  debounceSave();
+}
+
+function applyColorHex(key, val){
+  if(/^#[0-9A-Fa-f]{6}$/.test(val)){
+    const inp=document.getElementById('cfg-'+key);
+    if(inp) inp.value=val;
+    applyColor(key, val);
+  }
+}
+function applyLogoName(val){ document.getElementById('logo-name-display').textContent = val||'Team Metrics'; debounceSave(); }
+function applyFont(val){ document.documentElement.style.setProperty('--font', val); debounceSave(); }
+function applyFontSize(val){ document.body.style.fontSize=val+'px'; document.getElementById('cfg-fontsize-val').textContent=val+'px'; debounceSave(); }
+function applyRadius(val){ document.documentElement.style.setProperty('--r',val+'px'); document.documentElement.style.setProperty('--r-sm',Math.max(0,val-4)+'px'); document.getElementById('cfg-radius-val').textContent=val+'px'; debounceSave(); }
+
+/* ── Sidebar toggle ─────────────────────────── */
+let sidebarOpen = true;
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  const sb = document.querySelector('.sidebar');
+  const btn = document.getElementById('sidebar-toggle-btn');
+  if(sidebarOpen){
+    sb.classList.remove('collapsed');
+    btn.setAttribute('data-tip','Ocultar panel');
+  } else {
+    sb.classList.add('collapsed');
+    btn.setAttribute('data-tip','Mostrar panel');
+  }
+}
+
+/* ── Emoji category / search ─────────────────── */
+function setEmojiCat(memberId, cat, btn){
+  document.querySelectorAll(`#emoji-cats-${memberId} .emoji-cat-btn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid = document.getElementById('emoji-grid-'+memberId);
+  const emojis = cat==='all' ? EMOJI_ICONS : (EMOJI_CATS[cat]||[]);
+  grid.innerHTML = emojis.map(e=>`<button class="icon-picker-emoji" onclick="setMemberIcon(${memberId},'${e}')" title="${e}">${e}</button>`).join('');
+  // clear search
+  const srch = document.querySelector(`#icon-picker-${memberId} .emoji-search`);
+  if(srch) srch.value='';
+}
+
+function filterEmojis(memberId, query){
+  const grid = document.getElementById('emoji-grid-'+memberId);
+  const q = query.toLowerCase().trim();
+  const list = q ? EMOJI_ICONS.filter(e=>{
+    try { return [...e].some(c=>c.codePointAt(0).toString(16).includes(q)) || e.includes(q); } catch{ return false; }
+  }) : EMOJI_ICONS;
+  const show = q ? list : (EMOJI_CATS[Object.keys(EMOJI_CATS)[0]]||[]);
+  grid.innerHTML = (q ? list : show).map(e=>`<button class="icon-picker-emoji" onclick="setMemberIcon(${memberId},'${e}')" title="${e}">${e}</button>`).join('');
+  if(!q) return;
+  grid.innerHTML = EMOJI_ICONS.filter(e=>e.includes(query)).map(e=>`<button class="icon-picker-emoji" onclick="setMemberIcon(${memberId},'${e}')" title="${e}">${e}</button>`).join('') || '<div style="font-size:12px;color:var(--text-3);padding:8px;">Sin resultados</div>';
+}
+
+function applyPreset(name){
+  const presets={
+    dark:{accent:'#6B8BFF',bg:'#14141A',surface:'#1E1E28',text:'#E8E8F0',green:'#1DC87A',amber:'#F5A623',red:'#F05C5C',purple:'#9B7BFF','thead-bg':'#12121A','thead-text':'#6A6A80',kpi1:'#6B8BFF',kpi2:'#9B7BFF',kpi3:'#F5A623',kpi4:'#1DC87A'},
+    teal:{accent:'#0EA87A',bg:'#F0FAF7',surface:'#FFFFFF',text:'#0D1F1A',green:'#0EA87A',amber:'#D48A0C',red:'#E0433A',purple:'#7C5CFC','thead-bg':'#E4F7F1','thead-text':'#0A7757',kpi1:'#0EA87A',kpi2:'#7C5CFC',kpi3:'#D48A0C',kpi4:'#0EA87A'},
+    purple:{accent:'#7C5CFC',bg:'#F5F0FF',surface:'#FFFFFF',text:'#1A1030',green:'#18A86B',amber:'#D48A0C',red:'#E0433A',purple:'#7C5CFC','thead-bg':'#EDE8FF','thead-text':'#5438C2',kpi1:'#7C5CFC',kpi2:'#E85D3A',kpi3:'#D48A0C',kpi4:'#18A86B'},
+  };
+  const p=presets[name]; if(!p) return;
+  Object.entries(p).forEach(([k,v])=>{
+    applyColor(k,v);
+    const inp=document.getElementById('cfg-'+k);
+    if(inp) inp.value=v;
+    const hex=document.getElementById('cfg-'+k+'-hex');
+    if(hex) hex.value=v;
+  });
+}
+
+function resetConfig(){
+  const def={accent:'#4F6EF7',bg:'#F7F7F5',surface:'#FFFFFF',text:'#1A1A18',green:'#18A86B',amber:'#D48A0C',red:'#E0433A',purple:'#7C5CFC','thead-bg':'#F2F2F0','thead-text':'#9A9A94',kpi1:'#4F6EF7',kpi2:'#7C5CFC',kpi3:'#D48A0C',kpi4:'#0EA87A'};
+  Object.entries(def).forEach(([k,v])=>{
+    applyColor(k,v);
+    const inp=document.getElementById('cfg-'+k);
+    if(inp) inp.value=v;
+    const hex=document.getElementById('cfg-'+k+'-hex');
+    if(hex) hex.value=v;
+  });
+  document.documentElement.style.setProperty('--r','10px');
+  document.documentElement.style.setProperty('--r-sm','6px');
+  document.documentElement.style.setProperty('--font',"'Inter', sans-serif");
+  document.body.style.fontSize='14px';
+  document.getElementById('cfg-fontsize').value=14;
+  document.getElementById('cfg-fontsize-val').textContent='14px';
+  document.getElementById('cfg-radius').value=10;
+  document.getElementById('cfg-radius-val').textContent='10px';
+  document.getElementById('cfg-logo-name').value='Team Metrics';
+  document.getElementById('logo-name-display').textContent='Team Metrics';
+}
+
+/* ── Navigation ──────────────────────────────── */
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+let curSec='general';
+const SEC_TITLES={general:'General del team',individual:'Métricas individuales',reuniones:'Reuniones',ingresar:'Ingresar métricas',integrantes:'Integrantes',configuracion:'Configuración'};
+
+function showSection(name, btn){
+  Object.keys(SEC_TITLES).forEach(s=>{ const el=document.getElementById('sec-'+s); if(el) el.classList.remove('active'); });
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('topbar-title').textContent=SEC_TITLES[name]||name;
+  curSec=name;
+  if(name==='reuniones') renderMeetings();
+  if(name==='integrantes') renderMembersList();
+}
+
+function renderAll(){
+  renderKPI();
+  renderRevBreakdown();
+  renderTeamTable();
+  renderIndGrid();
+  renderEditTable();
+}
+
+/* ════════════════════════════════════════════════
+   FIREBASE REALTIME DATABASE — persistencia pública
+   ════════════════════════════════════════════════ */
+
+// ─────────────────────────────────────────────────────────────────
+// ✏️  PASO 1: Reemplaza estos valores con los de tu proyecto Firebase
+//    Encuéntralos en: Firebase Console → tu proyecto → ⚙️ Configuración del proyecto
+// ─────────────────────────────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey:      "AIzaSyAGEfaJE9GbGibsk404A4Go49rKAldbgG4",
+  authDomain:  "team-metrics-dd-cd22e.firebaseapp.com",
+  databaseURL: "https://team-metrics-dd-cd22e-default-rtdb.firebaseio.com/",
+  projectId:   "team-metrics-dd-cd22e",
+};
+// ─────────────────────────────────────────────────────────────────
+
+// ── Firebase SDK (cargado dinámicamente) ──
+let db = null;
+let _fbReady = false;
+let _fbWriteLock = false;
+
+function loadFirebaseSDK(cb){
+  if(typeof firebase !== 'undefined'){ cb(); return; }
+  const s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  s1.onload = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+    s2.onload = cb;
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+
+function initFirebase(cfg){
+  loadFirebaseSDK(() => {
+    try {
+      if(!firebase.apps.length){
+        firebase.initializeApp(cfg);
+      }
+      db = firebase.database();
+      _fbReady = true;
+      setConnStatus('connecting');
+
+      db.ref('.info/connected').on('value', snap => {
+        setConnStatus(snap.val() ? 'online' : 'offline');
+      });
+
+      db.ref('state').on('value', snap => {
+        if(_fbWriteLock) return;
+        const state = snap.val();
+        if(!state) return;
+        applyRemoteState(state);
+      });
+
+    } catch(e){
+      console.error('Firebase init error:', e);
+      setConnStatus('error');
+      showToastMsg('Error Firebase: ' + e.message, true);
+    }
+  });
+}
+
+function applyRemoteState(state){
+  if(state.members && state.members.length) members = state.members;
+  if(state.data) data = state.data;
+  if(state.meetings) meetings = state.meetings;
+  if(state.curMonth !== undefined) curMonth = state.curMonth;
+  if(state.curYear  !== undefined) curYear  = state.curYear;
+  if(state.curWeek  !== undefined) curWeek  = state.curWeek;
+  if(state.curWeekYear !== undefined) curWeekYear = state.curWeekYear;
+  if(state.periodMode) periodMode = state.periodMode;
+  if(state.cfg) applyRemoteCfg(state.cfg);
+  updateHeader();
+  renderAll();
+  renderMeetings();
+  if(curSec==='integrantes') renderMembersList();
+  // Restore period mode button
+  document.querySelectorAll('.ptbtn').forEach(b=>b.classList.remove('active'));
+  const pb = document.getElementById('pt-'+(state.periodMode||'mes'));
+  if(pb) pb.classList.add('active');
+}
+
+function applyRemoteCfg(c){
+  ['accent','bg','surface','text','green','amber','red','purple','thead-bg','thead-text','kpi1','kpi2','kpi3','kpi4'].forEach(k=>{
+    if(c[k]) applyColor(k, c[k]);
+  });
+  if(c.r){
+    const rv = parseInt(c.r);
+    document.documentElement.style.setProperty('--r', c.r);
+    document.documentElement.style.setProperty('--r-sm', Math.max(0,rv-4)+'px');
+    const ri = document.getElementById('cfg-radius');
+    const rv2 = document.getElementById('cfg-radius-val');
+    if(ri) ri.value = rv;
+    if(rv2) rv2.textContent = c.r;
+  }
+  if(c.font){
+    document.documentElement.style.setProperty('--font', c.font);
+    const fs = document.getElementById('cfg-font');
+    if(fs) fs.value = c.font;
+  }
+  if(c.fontSize){
+    document.body.style.fontSize = c.fontSize;
+    const fv = parseInt(c.fontSize);
+    const fi = document.getElementById('cfg-fontsize');
+    const fl = document.getElementById('cfg-fontsize-val');
+    if(fi) fi.value = fv;
+    if(fl) fl.textContent = c.fontSize;
+  }
+  if(c.logoName){
+    document.getElementById('logo-name-display').textContent = c.logoName;
+    const li = document.getElementById('cfg-logo-name');
+    if(li) li.value = c.logoName;
+  }
+  if(c.syncKPI !== undefined){
+    syncKPI = c.syncKPI;
+    const sc = document.getElementById('cfg-sync-kpi');
+    if(sc) sc.checked = syncKPI;
+  }
+  if(c.sidebarOpen === false && sidebarOpen){ sidebarOpen = true; toggleSidebar(); }
+}
+
+// ── Guardar estado completo en Firebase ──
+function saveState(){
+  if(!_fbReady || !db){
+    // Fallback a localStorage si no hay Firebase aún
+    try { localStorage.setItem('tm-local-bak', JSON.stringify(buildStateObj())); } catch{}
+    return;
+  }
+  const state = buildStateObj();
+  _fbWriteLock = true;
+  db.ref('state').set(state)
+    .then(() => { _fbWriteLock = false; })
+    .catch(e => { _fbWriteLock = false; console.warn('Firebase write error:', e); setConnStatus('error'); });
+}
+
+function buildStateObj(){
+  const cfg = {
+    accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+    bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
+    surface: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(),
+    text: getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
+    green: getComputedStyle(document.documentElement).getPropertyValue('--green').trim(),
+    amber: getComputedStyle(document.documentElement).getPropertyValue('--amber').trim(),
+    red: getComputedStyle(document.documentElement).getPropertyValue('--red').trim(),
+    purple: getComputedStyle(document.documentElement).getPropertyValue('--purple').trim(),
+    'thead-bg': getComputedStyle(document.documentElement).getPropertyValue('--thead-bg').trim(),
+    'thead-text': getComputedStyle(document.documentElement).getPropertyValue('--thead-text').trim(),
+    kpi1: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-1').trim(),
+    kpi2: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-2').trim(),
+    kpi3: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-3').trim(),
+    kpi4: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-4').trim(),
+    r: getComputedStyle(document.documentElement).getPropertyValue('--r').trim(),
+    font: getComputedStyle(document.documentElement).getPropertyValue('--font').trim(),
+    fontSize: document.body.style.fontSize || '14px',
+    logoName: document.getElementById('logo-name-display').textContent,
+    syncKPI, sidebarOpen,
+  };
+  return { members, data, meetings, curMonth, curYear, curWeek, curWeekYear, periodMode, cfg };
+}
+
+function debounceSave(){
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(saveState, 600);
+}
+
+function clearState(){
+  if(!confirm('¿Borrar TODOS los datos en Firebase? Esto afecta a todos los usuarios.')) return;
+  if(db) db.ref('state').remove().then(()=>{ showToastMsg('Datos borrados'); setTimeout(()=>location.reload(),800); });
+  else location.reload();
+}
+
+// ── Indicador de conexión en topbar ──
+function setConnStatus(status){
+  const el = document.getElementById('conn-status');
+  if(!el) return;
+  const map = {
+    connecting: { dot:'#D48A0C', label:'Conectando…' },
+    online:     { dot:'#18A86B', label:'Firebase · En línea' },
+    offline:    { dot:'#E0433A', label:'Sin conexión' },
+    error:      { dot:'#E0433A', label:'Error Firebase' },
+  };
+  const s = map[status] || map.offline;
+  el.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:${s.dot};display:inline-block;flex-shrink:0;"></span> ${s.label}`;
+}
+
+function showToastMsg(msg, isErr=false){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isErr ? 'var(--red-text)' : '';
+  t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>{ t.classList.remove('show'); t.style.background=''; t.textContent='✓ Guardado'; }, isErr?3000:1600);
+}
+
+// ── El botón de Firebase en topbar ahora muestra info del proyecto ──
+function showFBSetup(){
+  const proj = FIREBASE_CONFIG.projectId || 'no configurado';
+  alert(`Firebase conectado\nProyecto: ${proj}\n\nPara cambiar el proyecto, edita la variable FIREBASE_CONFIG en el código HTML.`);
+}
+
+/* ── Init ──────────────────────────────────────── */
+updateHeader();
+renderAll();
+renderMeetings();
+
+// Conectar automáticamente con las credenciales del archivo
+if(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'TU_API_KEY_AQUI'){
+  initFirebase(FIREBASE_CONFIG);
+} else {
+  setConnStatus('offline');
+  console.warn('⚠️ Team Metrics: Configura tus credenciales de Firebase en la variable FIREBASE_CONFIG del archivo HTML.');
+  showToastMsg('⚠️ Configura Firebase en el código HTML', true);
+}
+</script>
+</body>
+</html>
