@@ -1714,6 +1714,12 @@ function applyRemoteState(state){
   if(state.curWeek  !== undefined) curWeek  = state.curWeek;
   if(state.curWeekYear !== undefined) curWeekYear = state.curWeekYear;
   if(state.periodMode) periodMode = state.periodMode;
+  if(state.logoName){
+    const ld = document.getElementById('logo-name-display');
+    const li = document.getElementById('cfg-logo-name');
+    if(ld) ld.textContent = state.logoName;
+    if(li && document.activeElement !== li) li.value = state.logoName;
+  }
   updateHeader();
   renderAll();
   renderMeetings();
@@ -1750,11 +1756,7 @@ function applyRemoteCfg(c){
     if(fi) fi.value = fv;
     if(fl) fl.textContent = c.fontSize;
   }
-  if(c.logoName){
-    document.getElementById('logo-name-display').textContent = c.logoName;
-    const li = document.getElementById('cfg-logo-name');
-    if(li) li.value = c.logoName;
-  }
+
   if(c.syncKPI !== undefined){
     syncKPI = c.syncKPI;
     const sc = document.getElementById('cfg-sync-kpi');
@@ -1781,7 +1783,8 @@ function saveState(){
 
 function buildStateObj(){
   // Solo datos compartidos — SIN colores ni configuración visual
-  return { members, data, meetings, curMonth, curYear, curWeek, curWeekYear, periodMode };
+  const logoName = document.getElementById('logo-name-display') ? document.getElementById('logo-name-display').textContent : 'Team Metrics';
+  return { members, data, meetings, curMonth, curYear, curWeek, curWeekYear, periodMode, logoName };
 }
 
 function savePersonalCfg(){
@@ -1805,7 +1808,6 @@ function savePersonalCfg(){
       r: getComputedStyle(document.documentElement).getPropertyValue('--r').trim(),
       font: getComputedStyle(document.documentElement).getPropertyValue('--font').trim(),
       fontSize: document.body.style.fontSize || '14px',
-      logoName: document.getElementById('logo-name-display') ? document.getElementById('logo-name-display').textContent : '',
     };
     localStorage.setItem('tm-personal-cfg', JSON.stringify(cfg));
   } catch(e){}
