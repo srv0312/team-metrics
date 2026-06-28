@@ -1654,7 +1654,6 @@ const FIREBASE_CONFIG = {
 // ── Firebase SDK (cargado dinámicamente) ──
 let db = null;
 let _fbReady = false;
-let _fbWriteLock = false;
 
 function loadFirebaseSDK(cb){
   if(typeof firebase !== 'undefined'){ cb(); return; }
@@ -1683,18 +1682,26 @@ function initFirebase(cfg){
         setConnStatus(snap.val() ? 'online' : 'offline');
       });
 
-      // Carga inicial de datos
+      // Generar ID único para esta sesión
+      window._sessionId = Math.random().toString(36).slice(2);
+
+      // Carga inicial de datos (una sola vez)
       db.ref('state').once('value', snap => {
         const state = snap.val();
         if(state) applyRemoteState(state);
         setConnStatus('online');
-      });
 
-      // Escucha cambios de OTROS usuarios en tiempo real
-      db.ref('state').on('value', snap => {
-        if(_fbWriteLock) return;
-        const state = snap.val();
-        if(state) applyRemoteState(state);
+        // DESPUÉS de cargar, escuchar cambios de otros usuarios
+        db.ref('state/lastWrittenBy').on('value', snap => {
+          const writer = snap.val();
+          // Ignorar si fui yo quien escribió
+          if(!writer || writer === window._sessionId) return;
+          // Otro usuario cambió algo — recargar datos
+          db.ref('state').once('value', s => {
+            const state = s.val();
+            if(state) applyRemoteState(state);
+          });
+        });
       });
 
     } catch(e){
@@ -1773,12 +1780,10 @@ function saveState(){
     return;
   }
   const state = buildStateObj();
-  _fbWriteLock = true;
-  clearTimeout(window._lockTimer);
-  window._lockTimer = setTimeout(() => { _fbWriteLock = false; }, 3000); // safety release
+  state.lastWrittenBy = window._sessionId || 'unknown';
   db.ref('state').set(state)
-    .then(() => { clearTimeout(window._lockTimer); setTimeout(() => { _fbWriteLock = false; }, 500); })
-    .catch(e => { _fbWriteLock = false; console.warn('Firebase write error:', e); setConnStatus('error'); });
+    .then(() => { setConnStatus('online'); })
+    .catch(e => { console.warn('Firebase write error:', e); setConnStatus('error'); });
 }
 
 function buildStateObj(){
