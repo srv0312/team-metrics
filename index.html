@@ -1688,7 +1688,6 @@ function applyRemoteState(state){
   if(state.curWeek  !== undefined) curWeek  = state.curWeek;
   if(state.curWeekYear !== undefined) curWeekYear = state.curWeekYear;
   if(state.periodMode) periodMode = state.periodMode;
-  if(state.cfg) applyRemoteCfg(state.cfg);
   updateHeader();
   renderAll();
   renderMeetings();
@@ -1765,14 +1764,30 @@ function savePersonalCfg(){
       bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
       surface: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(),
       text: getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
+      green: getComputedStyle(document.documentElement).getPropertyValue('--green').trim(),
+      amber: getComputedStyle(document.documentElement).getPropertyValue('--amber').trim(),
+      red: getComputedStyle(document.documentElement).getPropertyValue('--red').trim(),
+      purple: getComputedStyle(document.documentElement).getPropertyValue('--purple').trim(),
+      'thead-bg': getComputedStyle(document.documentElement).getPropertyValue('--thead-bg').trim(),
+      'thead-text': getComputedStyle(document.documentElement).getPropertyValue('--thead-text').trim(),
+      kpi1: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-1').trim(),
+      kpi2: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-2').trim(),
+      kpi3: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-3').trim(),
+      kpi4: getComputedStyle(document.documentElement).getPropertyValue('--kpi-icon-c-4').trim(),
       r: getComputedStyle(document.documentElement).getPropertyValue('--r').trim(),
       font: getComputedStyle(document.documentElement).getPropertyValue('--font').trim(),
       fontSize: document.body.style.fontSize || '14px',
+      logoName: document.getElementById('logo-name-display') ? document.getElementById('logo-name-display').textContent : '',
     };
     localStorage.setItem('tm-personal-cfg', JSON.stringify(cfg));
   } catch(e){}
-};
-  return { members, data, meetings, curMonth, curYear, curWeek, curWeekYear, periodMode, cfg };
+}
+
+function loadPersonalCfg(){
+  try {
+    const raw = localStorage.getItem('tm-personal-cfg');
+    if(raw) applyRemoteCfg(JSON.parse(raw));
+  } catch(e){}
 }
 
 function debounceSave(){
@@ -1820,6 +1835,9 @@ function showFBSetup(){
 updateHeader();
 renderAll();
 renderMeetings();
+
+// Cargar colores personales del navegador
+loadPersonalCfg();
 
 // Conectar automáticamente con las credenciales del archivo
 if(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'TU_API_KEY_AQUI'){
