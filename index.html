@@ -985,6 +985,7 @@ function renderRevBreakdown(){
 
 function memberAvSmall(m, p){
   if(m.photo) return `<img src="${m.photo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+  if(m.icon) return `<div style="width:18px;height:18px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">${m.icon}</div>`;
   return `<div style="width:18px;height:18px;border-radius:50%;background:${p.bg};color:${p.color};font-size:7px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials(m.name)}</div>`;
 }
 
@@ -1012,7 +1013,7 @@ function renderTeamTable(){
     return `<tr>
       <td class="rank-num">${rankIcon(ri)}</td>
       <td><div class="av-wrap">
-        ${m.photo ? `<img src="${m.photo}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : `<div class="av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
+        ${m.photo ? `<img src="${m.photo}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${p.bg};color:${p.color};font-size:18px;">${m.icon}</div>` : `<div class="av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
         <span class="av-name">${m.name}</span>
       </div></td>
       <td class="${+e.revenue<0?'num-neg':'num'}" style="font-weight:600;">${fmt$(e.revenue)}</td>
@@ -1113,7 +1114,7 @@ function renderIndGrid(){
       const e=getE(m.id); const p=pal(i);
       return `<tr>
         <td><div class="av-wrap">
-          <div class="av" style="background:${p.bg};color:${p.color};width:26px;height:26px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`:initials(m.name)}</div>
+          <div class="av" style="background:${p.bg};color:${p.color};width:26px;height:26px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`:m.icon?`<span style="font-size:15px;">${m.icon}</span>`:initials(m.name)}</div>
           <span style="font-size:13px;font-weight:500;">${m.name}</span>
         </div></td>
         <td class="${+e.revenue<0?'num-neg':'num'}" style="font-weight:600;">${fmt$(e.revenue)}</td>
@@ -1141,7 +1142,7 @@ function renderEditTable(){
     const e=getE(m.id); const p=pal(i);
     return `<tr>
       <td><div class="av-wrap">
-        <div class="av" style="background:${p.bg};color:${p.color};width:24px;height:24px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">`:initials(m.name)}</div>
+        <div class="av" style="background:${p.bg};color:${p.color};width:24px;height:24px;font-size:9px;">${m.photo?`<img src="${m.photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">`:m.icon?`<span style="font-size:14px;">${m.icon}</span>`:initials(m.name)}</div>
         <span style="font-size:13px;font-weight:500;">${m.name}</span>
       </div></td>
       ${FIELDS.map(f=>`<td><input class="editable" type="number" value="${e[f]||0}" data-mid="${m.id}" data-field="${f}" onchange="cellChange(this)" step="${f==='qa'?.1:1}"></td>`).join('')}
