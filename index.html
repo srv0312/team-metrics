@@ -985,7 +985,7 @@ function renderRevBreakdown(){
 
 function memberAvSmall(m, p){
   if(m.photo) return `<img src="${m.photo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
-  if(m.icon) return `<div style="width:18px;height:18px;border-radius:50%;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">${m.icon}</div>`;
+  if(m.icon) return `<div style="width:18px;height:18px;border-radius:50%;background:${m.color||p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${m.icon}</div>`;
   return `<div style="width:18px;height:18px;border-radius:50%;background:${p.bg};color:${p.color};font-size:7px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials(m.name)}</div>`;
 }
 
@@ -1013,7 +1013,7 @@ function renderTeamTable(){
     return `<tr>
       <td class="rank-num">${rankIcon(ri)}</td>
       <td><div class="av-wrap">
-        ${m.photo ? `<img src="${m.photo}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${p.bg};color:${p.color};font-size:18px;">${m.icon}</div>` : `<div class="av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
+        ${m.photo ? `<img src="${m.photo}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${m.color||p.bg};color:${p.color};font-size:22px;">${m.icon}</div>` : `<div class="av" style="background:${m.color||p.bg};color:${p.color};">${initials(m.name)}</div>`}
         <span class="av-name">${m.name}</span>
       </div></td>
       <td class="${+e.revenue<0?'num-neg':'num'}" style="font-weight:600;">${fmt$(e.revenue)}</td>
@@ -1064,7 +1064,7 @@ function renderIndGrid(){
       ];
       return `<div class="ind-card">
         <div class="ind-card-top">
-          ${m.photo ? `<img src="${m.photo}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="ind-av" style="background:${p.bg};color:${p.color};">${m.icon}</div>` : `<div class="ind-av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
+          ${m.photo ? `<img src="${m.photo}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="ind-av" style="background:${m.color||p.bg};color:${p.color};font-size:26px;">${m.icon}</div>` : `<div class="ind-av" style="background:${p.bg};color:${p.color};">${initials(m.name)}</div>`}
           <div class="ind-name">${m.name}</div>
         </div>
         <div class="ind-body">
@@ -1094,7 +1094,7 @@ function renderIndGrid(){
       ];
       return `<div class="ind-compact-row">
         <div class="ind-compact-name">
-          ${m.photo ? `<img src="${m.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>` : `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:10px;flex-shrink:0;">${initials(m.name)}</div>`}
+          ${m.photo ? `<img src="${m.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : m.icon ? `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>` : `<div class="av" style="background:${p.bg};color:${p.color};width:28px;height:28px;font-size:10px;flex-shrink:0;">${initials(m.name)}</div>`}
           <span style="font-size:13px;font-weight:500;color:var(--text);">${m.name}</span>
         </div>
         <div class="ind-compact-metrics">
@@ -1159,7 +1159,7 @@ function cellChange(el){
 /* ── Members manager ─────────────────────────── */
 function memberAv(m, p, size=28, fontSize=10){
   if(m.photo) return `<img src="${m.photo}" class="av-img" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
-  if(m.icon) return `<div class="av" style="background:${p.bg};color:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size*0.5)}px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>`;
+  if(m.icon) return `<div class="av" style="background:${m.color||p.bg};color:${p.color};width:${size}px;height:${size}px;font-size:${Math.round(size*0.65)}px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">${m.icon}</div>`;
   return `<div class="av" style="background:${p.bg};color:${p.color};width:${size}px;height:${size}px;font-size:${fontSize}px;flex-shrink:0;">${initials(m.name)}</div>`;
 }
 
@@ -1199,6 +1199,11 @@ function renderMembersList(){
           </div>
           <div class="icon-picker-grid" id="emoji-grid-${m.id}" style="max-height:200px;">
             ${EMOJI_CATS[Object.keys(EMOJI_CATS)[0]].map(e=>`<button class="icon-picker-emoji" onclick="setMemberIcon(${m.id},'${e}')" title="${e}">${e}</button>`).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:4px 0;">
+            <span style="font-size:11px;color:var(--text-2);flex-shrink:0;">Color de fondo:</span>
+            <input type="color" value="${m.color||p.bg}" style="width:28px;height:22px;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:1px;" oninput="setMemberColor(${m.id},this.value)" onclick="event.stopPropagation()" title="Color de fondo del avatar">
+            <button onclick="resetMemberColor(${m.id})" style="font-size:10px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:none;cursor:pointer;color:var(--text-2);">Reset</button>
           </div>
           <button class="icon-upload-btn" onclick="triggerPhotoUpload(${m.id})">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1243,6 +1248,19 @@ function clearMemberIcon(id){
   const m = members.find(x=>x.id===id);
   if(m){ m.icon = null; m.photo = null; renderAll(); renderMembersList(); showToast(); saveState(); }
   document.querySelectorAll('.icon-picker-dropdown').forEach(d=>d.classList.remove('open'));
+}
+
+function setMemberColor(id, color){
+  const m = members.find(x=>x.id===id);
+  if(m){ m.color = color; renderAll(); renderMembersList(); saveState(); }
+}
+
+function resetMemberColor(id){
+  const m = members.find(x=>x.id===id);
+  if(m){ delete m.color; renderAll(); renderMembersList(); saveState(); }
+  // Reset color picker input visually
+  const dropdown = document.getElementById('icon-picker-'+id);
+  if(dropdown){ const inp = dropdown.querySelector('input[type=color]'); if(inp){ const idx = members.findIndex(x=>x.id===id); inp.value = ['#E8E8F0','#F0E8F8','#E8F4F0','#FFF4E0','#F8E8E8','#E8F0F8'][idx%6]; } }
 }
 
 function triggerPhotoUpload(id){
