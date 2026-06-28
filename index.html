@@ -1664,11 +1664,18 @@ function initFirebase(cfg){
         setConnStatus(snap.val() ? 'online' : 'offline');
       });
 
+      // Carga inicial de datos
+      db.ref('state').once('value', snap => {
+        const state = snap.val();
+        if(state) applyRemoteState(state);
+        setConnStatus('online');
+      });
+
+      // Escucha cambios de OTROS usuarios en tiempo real
       db.ref('state').on('value', snap => {
         if(_fbWriteLock) return;
         const state = snap.val();
-        if(!state) return;
-        applyRemoteState(state);
+        if(state) applyRemoteState(state);
       });
 
     } catch(e){
@@ -1746,8 +1753,10 @@ function saveState(){
   }
   const state = buildStateObj();
   _fbWriteLock = true;
+  clearTimeout(window._lockTimer);
+  window._lockTimer = setTimeout(() => { _fbWriteLock = false; }, 3000); // safety release
   db.ref('state').set(state)
-    .then(() => { _fbWriteLock = false; })
+    .then(() => { clearTimeout(window._lockTimer); setTimeout(() => { _fbWriteLock = false; }, 500); })
     .catch(e => { _fbWriteLock = false; console.warn('Firebase write error:', e); setConnStatus('error'); });
 }
 
