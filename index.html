@@ -503,10 +503,12 @@
           <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">Nueva reunión</div>
           <div class="meeting-form-row">
             <input type="date" class="mf-date" id="mf-date">
+            <input type="time" id="mf-time" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--text);outline:none;cursor:pointer;" title="Hora de la reunión">
             <select class="mf-type" id="mf-type">
               <option>Team Huddle</option>
               <option>QA Huddle</option>
               <option>1:1</option>
+              <option>QA 1:1</option>
             </select>
           </div>
           <div style="margin-bottom:10px;">
@@ -1338,12 +1340,13 @@ function renderMFAttendeeTags(){
 
 function saveMeeting(){
   const date = document.getElementById('mf-date').value;
+  const time = document.getElementById('mf-time').value;
   const type = document.getElementById('mf-type').value;
   const notes = document.getElementById('mf-notes').value.trim();
   if(!date){ alert('Selecciona una fecha'); return; }
   const key = mk();
   if(!meetings[key]) meetings[key]=[];
-  meetings[key].push({id:Date.now(), date, type, attendees:[...mfAttendees], notes});
+  meetings[key].push({id:Date.now(), date, time, type, attendees:[...mfAttendees], notes});
   meetings[key].sort((a,b)=>b.date.localeCompare(a.date));
   closeMeetingForm(); renderMeetings(); showToast(); saveState();
 }
@@ -1404,7 +1407,7 @@ function renderMeetings(){
       <div class="meeting-head">
         <div class="meeting-head-left">
           <span class="meeting-date">${formatDate(meeting.date)}</span>
-          <span class="meeting-type">${meeting.type}</span>
+          <span class="meeting-type">${meeting.type}</span>${meeting.time ? `<span style="font-size:11px;color:var(--text-2);margin-left:6px;">🕐 ${meeting.time}</span>` : ""}
         </div>
         <button class="meeting-del" onclick="deleteMeeting(${meeting.id})">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
@@ -1526,7 +1529,15 @@ function applyColorHex(key, val){
 }
 function applyLogoName(val){ document.getElementById('logo-name-display').textContent = val||'Team Metrics'; debounceSave(); }
 function applyFont(val){ document.documentElement.style.setProperty('--font', val); debounceSave(); }
-function applyFontSize(val){ document.body.style.fontSize=val+'px'; document.getElementById('cfg-fontsize-val').textContent=val+'px'; debounceSave(); }
+function applyFontSize(val){
+  document.body.style.fontSize = val+'px';
+  // Force cascade to all elements via a dynamic style tag
+  let st = document.getElementById('dynamic-fontsize');
+  if(!st){ st = document.createElement('style'); st.id='dynamic-fontsize'; document.head.appendChild(st); }
+  st.textContent = `body, body * { font-size: inherit; } body { font-size: ${val}px !important; }`;
+  document.getElementById('cfg-fontsize-val').textContent = val+'px';
+  debounceSave();
+}
 function applyRadius(val){ document.documentElement.style.setProperty('--r',val+'px'); document.documentElement.style.setProperty('--r-sm',Math.max(0,val-4)+'px'); document.getElementById('cfg-radius-val').textContent=val+'px'; debounceSave(); }
 
 /* ── Sidebar toggle ─────────────────────────── */
@@ -1754,12 +1765,9 @@ function applyRemoteCfg(c){
     if(fs) fs.value = c.font;
   }
   if(c.fontSize){
-    document.body.style.fontSize = c.fontSize;
-    const fv = parseInt(c.fontSize);
+    applyFontSize(parseInt(c.fontSize));
     const fi = document.getElementById('cfg-fontsize');
-    const fl = document.getElementById('cfg-fontsize-val');
-    if(fi) fi.value = fv;
-    if(fl) fl.textContent = c.fontSize;
+    if(fi) fi.value = parseInt(c.fontSize);
   }
 
   if(c.syncKPI !== undefined){
