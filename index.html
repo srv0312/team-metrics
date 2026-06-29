@@ -807,12 +807,36 @@ let curWeek  = getWeekNum(new Date()); // ISO week number
 let curWeekYear = curYear;
 let periodMode = 'mes'; // 'mes' | 'semana'
 
-let members = [
+const DEFAULT_MEMBERS = [
   {id:1, name:'Ana García'},
   {id:2, name:'Luis Torres'},
   {id:3, name:'María López'},
   {id:4, name:'Carlos Ruiz'},
 ];
+
+// ── Carga desde localStorage al arrancar (antes de que Firebase responda) ──
+function loadLocalState(){
+  try {
+    const raw = localStorage.getItem('tm-local-bak');
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    if(s.members && s.members.length) members = s.members;
+    if(s.data) data = s.data;
+    if(s.meetings) meetings = s.meetings;
+    if(s.curMonth !== undefined) curMonth = s.curMonth;
+    if(s.curYear  !== undefined) curYear  = s.curYear;
+    if(s.curWeek  !== undefined) curWeek  = s.curWeek;
+    if(s.curWeekYear !== undefined) curWeekYear = s.curWeekYear;
+    if(s.periodMode) periodMode = s.periodMode;
+    if(s.logoName){
+      const ld = document.getElementById('logo-name-display');
+      if(ld) ld.textContent = s.logoName;
+    }
+    return true;
+  } catch(e){ return false; }
+}
+
+let members = [...DEFAULT_MEMBERS];
 let data = {};
 let meetings = {};
 
@@ -1780,9 +1804,10 @@ function applyRemoteCfg(c){
 
 // ── Guardar estado completo en Firebase ──
 function saveState(){
+  // Siempre guardar en localStorage como respaldo inmediato
+  try { localStorage.setItem('tm-local-bak', JSON.stringify(buildStateObj())); } catch{}
+
   if(!_fbReady || !db){
-    // Fallback a localStorage si no hay Firebase aún
-    try { localStorage.setItem('tm-local-bak', JSON.stringify(buildStateObj())); } catch{}
     return;
   }
   const state = buildStateObj();
@@ -1839,9 +1864,10 @@ function debounceSave(){
 }
 
 function clearState(){
-  if(!confirm('¿Borrar TODOS los datos en Firebase? Esto afecta a todos los usuarios.')) return;
+  if(!confirm('¿Borrar TODOS los datos? Esto no se puede deshacer.')) return;
+  try { localStorage.removeItem('tm-local-bak'); } catch{}
   if(db) db.ref('state').remove().then(()=>{ showToastMsg('Datos borrados'); setTimeout(()=>location.reload(),800); });
-  else location.reload();
+  else { showToastMsg('Datos borrados'); setTimeout(()=>location.reload(),800); }
 }
 
 // ── Indicador de conexión en topbar ──
@@ -1874,12 +1900,19 @@ function showFBSetup(){
 }
 
 /* ── Init ──────────────────────────────────────── */
+// Cargar estado local PRIMERO (antes de renderizar y antes de Firebase)
+loadLocalState();
+
+// Cargar colores personales del navegador
+loadPersonalCfg();
+
 updateHeader();
 renderAll();
 renderMeetings();
 
-// Cargar colores personales del navegador
-loadPersonalCfg();
+// Restaurar modo de período
+const _pb = document.getElementById('pt-'+(periodMode||'mes'));
+if(_pb){ document.querySelectorAll('.ptbtn').forEach(b=>b.classList.remove('active')); _pb.classList.add('active'); }
 
 // Conectar automáticamente con las credenciales del archivo
 if(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'TU_API_KEY_AQUI'){
@@ -1887,7 +1920,6 @@ if(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== 'TU_API_KEY_AQUI'){
 } else {
   setConnStatus('offline');
   console.warn('⚠️ Team Metrics: Configura tus credenciales de Firebase en la variable FIREBASE_CONFIG del archivo HTML.');
-  showToastMsg('⚠️ Configura Firebase en el código HTML', true);
 }
 </script>
 </body>
