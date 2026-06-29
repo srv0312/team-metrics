@@ -1682,26 +1682,24 @@ function initFirebase(cfg){
         setConnStatus(snap.val() ? 'online' : 'offline');
       });
 
-      // Generar ID único para esta sesión
+      // ID único para esta sesión
       window._sessionId = Math.random().toString(36).slice(2);
+      window._lastSaveTime = 0;
 
-      // Carga inicial de datos (una sola vez)
+      // Carga inicial
       db.ref('state').once('value', snap => {
         const state = snap.val();
         if(state) applyRemoteState(state);
         setConnStatus('online');
+      });
 
-        // DESPUÉS de cargar, escuchar cambios de otros usuarios
-        db.ref('state/lastWrittenBy').on('value', snap => {
-          const writer = snap.val();
-          // Ignorar si fui yo quien escribió
-          if(!writer || writer === window._sessionId) return;
-          // Otro usuario cambió algo — recargar datos
-          db.ref('state').once('value', s => {
-            const state = s.val();
-            if(state) applyRemoteState(state);
-          });
-        });
+      // Escuchar cambios en tiempo real — ignorar los propios por 5 segundos
+      db.ref('state').on('value', snap => {
+        const now = Date.now();
+        // Si guardé hace menos de 5s, ignorar (son mis propios datos rebotando)
+        if(now - window._lastSaveTime < 5000) return;
+        const state = snap.val();
+        if(state) applyRemoteState(state);
       });
 
     } catch(e){
@@ -1781,6 +1779,7 @@ function saveState(){
   }
   const state = buildStateObj();
   state.lastWrittenBy = window._sessionId || 'unknown';
+  window._lastSaveTime = Date.now();
   db.ref('state').set(state)
     .then(() => { setConnStatus('online'); })
     .catch(e => { console.warn('Firebase write error:', e); setConnStatus('error'); });
